@@ -59,10 +59,6 @@ namespace VRope
         private HookGroup globalHook = new HookGroup();
         private Pair<Vector3, Vector3> prevEntityPosition = new Pair<Vector3, Vector3>();
 
-        private Controller xboxController = null;
-        private State oldControllerState;
-        private State newControllerState;
-
         private Keys ToggleModActiveKey;
         private Keys AttachPlayerToEntityKey;
         private Keys AttachEntityToEntityKey;
@@ -792,7 +788,7 @@ namespace VRope
 
                 UI.Notify(MOD_NAME + " " + GetModVersion() + "\nby " + MOD_DEVELOPER, true);
 
-                if (xboxController != null && xboxController.IsConnected)
+                if (XBoxController.IsControllerConnected())
                     UI.Notify("XBox controller detected.", false);
 
                 FirstTime = false;
@@ -834,7 +830,7 @@ namespace VRope
                 if (DebugMode)
                     UpdateDebugStuff();
 
-                if (xboxController != null && xboxController.IsConnected)
+                if (XBoxController.IsControllerConnected())
                     ProcessXBoxControllerInput();
 
                 CheckForceModifInput();
