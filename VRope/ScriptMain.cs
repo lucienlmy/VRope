@@ -45,7 +45,9 @@ namespace VRope
         private const float  MAX_HOOKED_PED_SPEED = 0.57f;
         private const int PED_RAGDOLL_DURATION = 7000;
         private const char SEPARATOR_CHAR = '+';
-        
+
+        private SubtitleQueue subQueue = new SubtitleQueue();
+
         private bool ModActive = false;
         public bool ModRunning = false;
         private bool FirstTime = true;
@@ -90,7 +92,6 @@ namespace VRope
         private RopeType PlayerToEntityHookRopeType;
 
         private int ForceMagnitude;
-        
 
         public ScriptMain()
         {
@@ -184,11 +185,11 @@ namespace VRope
 
                 if(keyString == "WeaponPrev")
                 {
-                    resultList.Add(Util.MOUSE_WHEEL_DOWN_KEY);
+                    resultList.Add(Keyboard.MOUSE_WHEEL_DOWN_KEY);
                 }
                 else if(keyString == "WeaponNext")
                 {
-                    resultList.Add(Util.MOUSE_WHEEL_UP_KEY);
+                    resultList.Add(Keyboard.MOUSE_WHEEL_UP_KEY);
                 }
                 else
                 {
@@ -649,18 +650,18 @@ namespace VRope
 
             if(CONTINUOUS_FORCE)
             {
-                if (Util.IsKeyListPressed(ApplyInvertedForceKey))
+                if (Keyboard.IsKeyListPressed(ApplyInvertedForceKey))
                     ApplyForceAtAimedObject(true);
-                else if (Util.IsKeyListPressed(ApplyForceKey))
+                else if (Keyboard.IsKeyListPressed(ApplyForceKey))
                     ApplyForceAtAimedObject(false);
             }
 
-            if (Util.IsKeyListPressed(DecreaseForceKey))
+            if (Keyboard.IsKeyListPressed(DecreaseForceKey))
             {
                 ForceMagnitude -= FORCE_INCREMENT_VALUE;
                 showForceInfo = true;
             }
-            else if (Util.IsKeyListPressed(IncreaseForceKey))
+            else if (Keyboard.IsKeyListPressed(IncreaseForceKey))
             {
                 ForceMagnitude += FORCE_INCREMENT_VALUE;
                 showForceInfo = true;
@@ -815,7 +816,7 @@ namespace VRope
         {
             try
             {
-                if (Util.IsKeyListPressed(ToggleModActiveKey))
+                if (Keyboard.IsKeyListPressed(ToggleModActiveKey))
                 {
                     UI.ShowSubtitle("VRope " + (ModActive ? "Disabled" : "Enabled") + "\n\n\n\n\n");
                     ModActive = !ModActive;
@@ -829,49 +830,49 @@ namespace VRope
                 }
                 
                 //===================================================
-                else if (Util.IsKeyListPressed(AttachPlayerToEntityKey))
+                else if (Keyboard.IsKeyListPressed(AttachPlayerToEntityKey))
                 {
                     AttachPlayerToEntityProc();
                 }
-                else if (Util.IsKeyListPressed(AttachEntityToEntityKey))
+                else if (Keyboard.IsKeyListPressed(AttachEntityToEntityKey))
                 {
                     AttachEntityToEntityProc();
                 }
-                else if (Util.IsKeyListPressed(DeleteAllHooksKey))
+                else if (Keyboard.IsKeyListPressed(DeleteAllHooksKey))
                 {
                     DeleteAllHooks();
                 }
-                else if (Util.IsKeyListPressed(DeleteLastHookKey))
+                else if (Keyboard.IsKeyListPressed(DeleteLastHookKey))
                 {
                     DeleteLastHookProc();
                 }
-                else if (Util.IsKeyListPressed(WindLastHookRopeKey))
+                else if (Keyboard.IsKeyListPressed(WindLastHookRopeKey))
                 {
                     SetLastHookRopeWindingProc(true);
                 }
-                else if (Util.IsKeyListPressed(WindAllHookRopesKey))
+                else if (Keyboard.IsKeyListPressed(WindAllHookRopesKey))
                 {
                     SetAllHookRopesWindingProc(true);
                 }
-                else if (Util.IsKeyListPressed(UnwindLastHookRopeKey))
+                else if (Keyboard.IsKeyListPressed(UnwindLastHookRopeKey))
                 {
                     SetLastHookRopeUnwindingProc(true);
                 }
-                else if (Util.IsKeyListPressed(UnwindAllHookRopesKey))
+                else if (Keyboard.IsKeyListPressed(UnwindAllHookRopesKey))
                 {
                     SetAllHookRopesUnwindingProc(true);
                 }
 
-                else if(!CONTINUOUS_FORCE && Util.IsKeyListPressed(ApplyInvertedForceKey))
+                else if(!CONTINUOUS_FORCE && Keyboard.IsKeyListPressed(ApplyInvertedForceKey))
                 {
                     ApplyForceAtAimedObject(true);
                 }
-                else if(!CONTINUOUS_FORCE && Util.IsKeyListPressed(ApplyForceKey))
+                else if(!CONTINUOUS_FORCE && Keyboard.IsKeyListPressed(ApplyForceKey))
                 {
                     ApplyForceAtAimedObject(false);
                 }
 
-                else if (Util.IsKeyListPressed(ToggleDebugInfoKey))
+                else if (Keyboard.IsKeyListPressed(ToggleDebugInfoKey))
                 {
                     DebugMode = !DebugMode;
                 }
@@ -900,11 +901,11 @@ namespace VRope
                 {
                     SetAllHookRopesWindingProc(false);
                 }
-                else if (Util.IsKeyListPressed(UnwindLastHookRopeKey))
+                else if (Keyboard.IsKeyListPressed(UnwindLastHookRopeKey))
                 {
                     SetLastHookRopeUnwindingProc(false);
                 }
-                else if (Util.IsKeyListPressed(UnwindAllHookRopesKey))
+                else if (Keyboard.IsKeyListPressed(UnwindAllHookRopesKey))
                 {
                     SetAllHookRopesUnwindingProc(false);
                 }
