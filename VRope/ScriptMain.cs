@@ -22,13 +22,12 @@ namespace VRope
 {
     public class ScriptMain : Script
     {
-
         public const String MOD_NAME = "VRope";
         public const String MOD_DEVELOPER = "jeffsturm4nn"; // :D
         public const int VERSION_MINOR = 0;
         public const int VERSION_BUILD = 10;
         public const String VERSION_SUFFIX = "a DevBuild";
-
+        
         private bool ENABLE_XBOX_CONTROLLER_INPUT;
         private bool FREE_RANGE_MODE;
         private String CONFIG_FILE_NAME;
@@ -38,13 +37,15 @@ namespace VRope
         private float MAX_HOOKED_ENTITY_DISTANCE;
         private byte LEFT_TRIGGER_THRESHOLD;
         private byte RIGHT_TRIGGER_THRESHOLD;
+
+        private bool CONTINUOUS_FORCE;
         private int FORCE_INCREMENT_VALUE;
 
         private const int INIT_HOOK_LIST_CAPACITY = 500;
         private const float  MAX_HOOKED_PED_SPEED = 0.57f;
         private const int PED_RAGDOLL_DURATION = 7000;
         private const char SEPARATOR_CHAR = '+';
-
+        
         private bool ModActive = false;
         public bool ModRunning = false;
         private bool FirstTime = true;
@@ -59,18 +60,20 @@ namespace VRope
         private HookGroup globalHook = new HookGroup();
         private Pair<Vector3, Vector3> prevEntityPosition = new Pair<Vector3, Vector3>();
 
-        private Keys ToggleModActiveKey;
-        private Keys AttachPlayerToEntityKey;
-        private Keys AttachEntityToEntityKey;
-        private Keys DeleteLastHookKey;
-        private Keys DeleteAllHooksKey;
-        private Keys WindLastHookRopeKey;
-        private Keys WindAllHookRopesKey;
-        private Keys UnwindLastHookRopeKey;
-        private Keys UnwindAllHookRopesKey;
-        private Keys ApplyForceKey;
-        private Keys InvertForceDirectionKey;
-        private Keys ToggleDebugInfoKey;
+        private List<Keys> ToggleModActiveKey;
+        private List<Keys> AttachPlayerToEntityKey;
+        private List<Keys> AttachEntityToEntityKey;
+        private List<Keys> DeleteLastHookKey;
+        private List<Keys> DeleteAllHooksKey;
+        private List<Keys> WindLastHookRopeKey;
+        private List<Keys> WindAllHookRopesKey;
+        private List<Keys> UnwindLastHookRopeKey;
+        private List<Keys> UnwindAllHookRopesKey;
+        private List<Keys> ApplyForceKey;
+        private List<Keys> ApplyInvertedForceKey;
+        private List<Keys> ToggleDebugInfoKey;
+        private List<Keys> IncreaseForceKey;
+        private List<Keys> DecreaseForceKey;
 
         private Gamepad AttachPlayerToEntityButton;
         private Gamepad AttachEntityToEntityButton;
@@ -87,7 +90,7 @@ namespace VRope
         private RopeType PlayerToEntityHookRopeType;
 
         private int ForceMagnitude;
-
+        
 
         public ScriptMain()
         {
@@ -164,6 +167,41 @@ namespace VRope
             return resultData;
         }
         
+        private List<Keys> TranslateKeyDataToKeyList(String keyData)
+        {
+            if (keyData == null || keyData.Length == 0)
+                return null;
+
+            keyData = keyData.Replace(" ", "");
+
+            List<Keys> resultList = new List<Keys>(4);
+
+            String[] keyStrings = keyData.Split(SEPARATOR_CHAR);
+
+            for (int i = 0; i < keyStrings.Length; i++)
+            {
+                String keyString = keyStrings[i];
+
+                if(keyString == "WeaponPrev")
+                {
+                    resultList.Add(Util.MOUSE_WHEEL_DOWN_KEY);
+                }
+                else if(keyString == "WeaponNext")
+                {
+                    resultList.Add(Util.MOUSE_WHEEL_UP_KEY);
+                }
+                else
+                {
+                    Keys key = (Keys)Enum.Parse(typeof(Keys), keyStrings[i]);
+
+                    resultList.Add(key);
+                }
+            }
+
+            return resultList;
+        }
+
+
         public void ReadConfigFile()
         {
             try
@@ -192,22 +230,25 @@ namespace VRope
 
                 ForceMagnitude = settings.GetValue<int>("FORCE_GUN_VARS", "DEFAULT_FORCE_VALUE", 20);
                 FORCE_INCREMENT_VALUE = settings.GetValue<int>("FORCE_GUN_VARS", "FORCE_INCREMENT_VALUE", 2);
+                CONTINUOUS_FORCE = settings.GetValue<bool>("FORCE_GUN_VARS", "CONTINUOUS_FORCE", false);
 
                 try
                 {
-                    ToggleModActiveKey = settings.GetValue<Keys>("CONTROL_KEYBOARD", "ToggleModActiveKey", Keys.F11);
-                    AttachPlayerToEntityKey = settings.GetValue<Keys>("CONTROL_KEYBOARD", "AttachPlayerToEntityKey", Keys.T);
-                    AttachEntityToEntityKey = settings.GetValue<Keys>("CONTROL_KEYBOARD", "AttachEntityToEntityKey", Keys.H);
-                    DeleteLastHookKey = settings.GetValue<Keys>("CONTROL_KEYBOARD", "DeleteLastHookKey", Keys.X);
-                    DeleteAllHooksKey = settings.GetValue<Keys>("CONTROL_KEYBOARD", "DeleteAllHooksKey", Keys.Z);
-                    WindLastHookRopeKey = settings.GetValue<Keys>("CONTROL_KEYBOARD", "WindLastHookRopeKey", Keys.Y);
-                    WindAllHookRopesKey = settings.GetValue<Keys>("CONTROL_KEYBOARD", "WindAllHookRopesKey", Keys.J);
-                    UnwindLastHookRopeKey = settings.GetValue<Keys>("CONTROL_KEYBOARD", "UnwindLastHookRopeKey", Keys.U);
-                    UnwindAllHookRopesKey = settings.GetValue<Keys>("CONTROL_KEYBOARD", "UnwindAllHookRopesKey", Keys.K);
-                    ApplyForceKey = settings.GetValue<Keys>("CONTROL_KEYBOARD", "ApplyForceKey", Keys.E);
-                    InvertForceDirectionKey = settings.GetValue<Keys>("CONTROL_KEYBOARD", "InvertForceDirectionKey", Keys.LShiftKey);
+                    ToggleModActiveKey = TranslateKeyDataToKeyList(settings.GetValue<String>("CONTROL_KEYBOARD", "ToggleModActiveKey", "None"));
+                    AttachPlayerToEntityKey = TranslateKeyDataToKeyList(settings.GetValue<String>("CONTROL_KEYBOARD", "AttachPlayerToEntityKey", "None"));
+                    AttachEntityToEntityKey = TranslateKeyDataToKeyList(settings.GetValue<String>("CONTROL_KEYBOARD", "AttachEntityToEntityKey", "None"));
+                    DeleteLastHookKey = TranslateKeyDataToKeyList(settings.GetValue<String>("CONTROL_KEYBOARD", "DeleteLastHookKey", "None"));
+                    DeleteAllHooksKey = TranslateKeyDataToKeyList(settings.GetValue<String>("CONTROL_KEYBOARD", "DeleteAllHooksKey", "None"));
+                    WindLastHookRopeKey = TranslateKeyDataToKeyList(settings.GetValue<String>("CONTROL_KEYBOARD", "WindLastHookRopeKey", "None"));
+                    WindAllHookRopesKey = TranslateKeyDataToKeyList(settings.GetValue<String>("CONTROL_KEYBOARD", "WindAllHookRopesKey", "None"));
+                    UnwindLastHookRopeKey = TranslateKeyDataToKeyList(settings.GetValue<String>("CONTROL_KEYBOARD", "UnwindLastHookRopeKey", "None"));
+                    UnwindAllHookRopesKey = TranslateKeyDataToKeyList(settings.GetValue<String>("CONTROL_KEYBOARD", "UnwindAllHookRopesKey", "None"));
+                    ApplyForceKey = TranslateKeyDataToKeyList(settings.GetValue<String>("CONTROL_KEYBOARD", "ApplyForceKey", "None"));
+                    ApplyInvertedForceKey = TranslateKeyDataToKeyList(settings.GetValue<String>("CONTROL_KEYBOARD", "ApplyInvertedForceKey", "None"));
+                    IncreaseForceKey = TranslateKeyDataToKeyList(settings.GetValue<String>("CONTROL_KEYBOARD", "IncreaseForceKey", "None"));
+                    DecreaseForceKey = TranslateKeyDataToKeyList(settings.GetValue<String>("CONTROL_KEYBOARD", "DecreaseForceKey", "None"));
 
-                    ToggleDebugInfoKey = settings.GetValue<Keys>("DEV_STUFF", "ToggleDebugInfoKey", Keys.KeyCode); //User build version
+                    ToggleDebugInfoKey = TranslateKeyDataToKeyList(settings.GetValue<String>("DEV_STUFF", "ToggleDebugInfoKey", "None")); //User build version
                 }
                 catch (Exception exc)
                 {
@@ -602,113 +643,35 @@ namespace VRope
             }
         }
 
-        private void CheckForceModifInput()
+        private void CheckForForceChangeInput()
         {
             bool showForceInfo = false;
 
-            if (Game.Player.IsAiming)
+            if(CONTINUOUS_FORCE)
             {
-                if(Util.IsKeyPressed(ApplyForceKey))
-                {
-                    bool invertForce = false;
-                    
-                    if (Util.IsKeyPressed(InvertForceDirectionKey))
-                        invertForce = true;
-
-                    ApplyForceAtAimedObject(invertForce);
-                }
-                else if (Util.IsKeyPressed(Keys.LMenu))
-                {
-                    if (Game.IsControlPressed(2, GTA.Control.WeaponWheelNext))
-                    {
-                        ForceMagnitude += FORCE_INCREMENT_VALUE;
-                        showForceInfo = true; 
-                    }
-
-                    if (Game.IsControlPressed(1, GTA.Control.WeaponWheelPrev))
-                    {
-                        ForceMagnitude -= FORCE_INCREMENT_VALUE;
-                        showForceInfo = true;
-                    }
-                }
+                if (Util.IsKeyListPressed(ApplyInvertedForceKey))
+                    ApplyForceAtAimedObject(true);
+                else if (Util.IsKeyListPressed(ApplyForceKey))
+                    ApplyForceAtAimedObject(false);
             }
 
-            if(showForceInfo)
+            if (Util.IsKeyListPressed(DecreaseForceKey))
+            {
+                ForceMagnitude -= FORCE_INCREMENT_VALUE;
+                showForceInfo = true;
+            }
+            else if (Util.IsKeyListPressed(IncreaseForceKey))
+            {
+                ForceMagnitude += FORCE_INCREMENT_VALUE;
+                showForceInfo = true;
+            }
+
+
+
+            if (showForceInfo)
                 GlobalSubtitle += ("VRope Force: " + ForceMagnitude + "\n\n\n");
         }
 
-
-        //private void CheckForXBoxController()
-        //{
-        //    UserIndex[] indexes = new UserIndex[] { UserIndex.One, UserIndex.Two, UserIndex.Three, UserIndex.Four };
-            
-        //    for(int i=0; i<indexes.Length; i++)
-        //    {
-        //        Controller controller = new Controller(indexes[i]);
-
-        //        if (controller.IsConnected)
-        //        {
-        //            xboxController = controller;
-        //            break;
-        //        }
-        //        else
-        //        {
-        //            controller = null;
-        //        }
-        //    }
-        //}
-
-        //private bool wasControllerButtonPressed(Gamepad buttonData)
-        //{
-        //    return (isControllerButtonPressed(buttonData, newControllerState) &&
-        //            !isControllerButtonPressed(buttonData, oldControllerState));
-        //}
-
-        //private bool wasControllerButtonReleased(Gamepad buttonData)
-        //{
-        //    return (isControllerButtonPressed(buttonData, oldControllerState) &&
-        //            !isControllerButtonPressed(buttonData, newControllerState));
-        //}
-
-        //private bool isControllerButtonPressed(Gamepad buttonData, State state)
-        //{
-        //    Gamepad stateData = state.Gamepad;
-
-        //    bool isPressed = stateData.Buttons.HasFlag(buttonData.Buttons);
-
-        //    if(buttonData.LeftTrigger > 0)
-        //        isPressed = isPressed && (stateData.LeftTrigger >= buttonData.LeftTrigger);
-
-        //    if(buttonData.RightTrigger > 0)
-        //        isPressed = isPressed && (stateData.RightTrigger >= buttonData.RightTrigger);
-
-        //    return isPressed;
-        //}
-
-        //private bool isControllerButtonReleased(Gamepad buttonData, State state)
-        //{
-        //    Gamepad stateData = state.Gamepad;
-
-        //    bool isPressed = !stateData.Buttons.HasFlag(buttonData.Buttons);
-
-        //    if (buttonData.LeftTrigger > 0)
-        //        isPressed = isPressed && (stateData.LeftTrigger < buttonData.LeftTrigger);
-
-        //    if (buttonData.RightTrigger > 0)
-        //        isPressed = isPressed && (stateData.RightTrigger < buttonData.RightTrigger);
-
-        //    return isPressed;
-        //}
-
-        //private bool isControllerButtonPressed(Gamepad buttonData)
-        //{
-        //    return isControllerButtonPressed(buttonData, newControllerState);
-        //}
-
-        //private bool isControllerButtonReleased(Gamepad buttonData)
-        //{
-        //    return isControllerButtonReleased(buttonData, newControllerState);
-        //}
 
         private void ProcessXBoxControllerInput()
         {
@@ -776,7 +739,6 @@ namespace VRope
         }
 
 
-
         private void CheckCurrentModState()
         {
             ModRunning = (Game.Player.Exists() && !FirstTime &&
@@ -808,6 +770,7 @@ namespace VRope
             UI.ShowSubtitle(GlobalSubtitle);
         }
 
+
         public void OnTick(object sender, EventArgs e)
         {
             try
@@ -833,7 +796,7 @@ namespace VRope
                 if (XBoxController.IsControllerConnected())
                     ProcessXBoxControllerInput();
 
-                CheckForceModifInput();
+                CheckForForceChangeInput();
 
                 ProcessHooks();
 
@@ -852,7 +815,7 @@ namespace VRope
         {
             try
             {
-                if (e.KeyCode == ToggleModActiveKey)
+                if (Util.IsKeyListPressed(ToggleModActiveKey))
                 {
                     UI.ShowSubtitle("VRope " + (ModActive ? "Disabled" : "Enabled") + "\n\n\n\n\n");
                     ModActive = !ModActive;
@@ -865,42 +828,50 @@ namespace VRope
                     return;
                 }
                 
-                //=========================================TEST
-
                 //===================================================
-                else if (e.KeyCode == AttachPlayerToEntityKey)
+                else if (Util.IsKeyListPressed(AttachPlayerToEntityKey))
                 {
                     AttachPlayerToEntityProc();
                 }
-                else if (e.KeyCode == AttachEntityToEntityKey)
+                else if (Util.IsKeyListPressed(AttachEntityToEntityKey))
                 {
                     AttachEntityToEntityProc();
                 }
-                else if (e.KeyCode == DeleteAllHooksKey)
+                else if (Util.IsKeyListPressed(DeleteAllHooksKey))
                 {
                     DeleteAllHooks();
                 }
-                else if (e.KeyCode == DeleteLastHookKey)
+                else if (Util.IsKeyListPressed(DeleteLastHookKey))
                 {
                     DeleteLastHookProc();
                 }
-                else if (e.KeyCode == WindLastHookRopeKey)
+                else if (Util.IsKeyListPressed(WindLastHookRopeKey))
                 {
                     SetLastHookRopeWindingProc(true);
                 }
-                else if (e.KeyCode == WindAllHookRopesKey)
+                else if (Util.IsKeyListPressed(WindAllHookRopesKey))
                 {
                     SetAllHookRopesWindingProc(true);
                 }
-                else if (e.KeyCode == UnwindLastHookRopeKey)
+                else if (Util.IsKeyListPressed(UnwindLastHookRopeKey))
                 {
                     SetLastHookRopeUnwindingProc(true);
                 }
-                else if (e.KeyCode == UnwindAllHookRopesKey)
+                else if (Util.IsKeyListPressed(UnwindAllHookRopesKey))
                 {
                     SetAllHookRopesUnwindingProc(true);
                 }
-                else if (e.KeyCode == ToggleDebugInfoKey)
+
+                else if(!CONTINUOUS_FORCE && Util.IsKeyListPressed(ApplyInvertedForceKey))
+                {
+                    ApplyForceAtAimedObject(true);
+                }
+                else if(!CONTINUOUS_FORCE && Util.IsKeyListPressed(ApplyForceKey))
+                {
+                    ApplyForceAtAimedObject(false);
+                }
+
+                else if (Util.IsKeyListPressed(ToggleDebugInfoKey))
                 {
                     DebugMode = !DebugMode;
                 }
@@ -929,11 +900,11 @@ namespace VRope
                 {
                     SetAllHookRopesWindingProc(false);
                 }
-                else if (e.KeyCode == UnwindLastHookRopeKey)
+                else if (Util.IsKeyListPressed(UnwindLastHookRopeKey))
                 {
                     SetLastHookRopeUnwindingProc(false);
                 }
-                else if (e.KeyCode == UnwindAllHookRopesKey)
+                else if (Util.IsKeyListPressed(UnwindAllHookRopesKey))
                 {
                     SetAllHookRopesUnwindingProc(false);
                 }
