@@ -2,41 +2,77 @@
 using System;
 using System.Collections.Generic;
 
+
 namespace VRope
 {
     class SubtitleQueue
     {
-        private List<Tuple<int, String, int>> queue = new List<Tuple<int, string, int>>(50);
+        private class SubtitleData
+        {
+            public long index = 0L;
+            public String subtitle = "";
+            public int duration = 1;
 
-        public void AddSubtitle(int index, String subtitle, int durationMs)
+            public SubtitleData(long index, String subtitle, int duration = 1)
+            {
+                this.index = index;
+                this.subtitle = subtitle;
+                this.duration = duration;
+            }
+        }
+
+        private List<SubtitleData> queue = new List<SubtitleData>(50);
+
+        private SubtitleData GetSubtitle(long index)
+        {
+            for (int i = 0; i < queue.Count; i++)
+            {
+                if (queue[i].index == index)
+                    return queue[i];
+            }
+            
+            return null;
+        }
+
+
+        public void AddSubtitle(long index, String subtitle, int durationMs)
         {
             if (subtitle == null || subtitle.Length == 0 || durationMs < 1)
                 return;
-            
-            if(!HasSubtitle(index))
-                queue.Add(new Tuple<int, string, int>(index, subtitle, durationMs));
+
+            SubtitleData subData = GetSubtitle(index);
+
+            if (subData == null)
+            {
+                queue.Add(new SubtitleData(index, subtitle, durationMs));
+            }
+            else
+            {
+                subData.subtitle = subtitle;
+                subData.duration = durationMs;
+            }
         }
 
-        public bool HasSubtitle(int index)
+        public bool HasSubtitle(long index)
         {
-            if (index < 0 || index > queue.Count - 1)
-                return false;
-
             for(int i=0; i<queue.Count; i++)
             {
-                if (queue[i].Item1 == index)
+                if (queue[i].index == index)
                     return true;
             }
 
             return false;
         }
 
-        public void RemoveSubtitle(int index)
+        public void RemoveSubtitle(long index)
         {
             if (index < 0 || index > queue.Count - 1)
                 return;
 
-            queue.RemoveAt(index);
+            SubtitleData subData = GetSubtitle(index);
+
+            if (subData != null)
+                queue.Remove(subData);
         }
 
         public void RemoveAll()
@@ -44,14 +80,19 @@ namespace VRope
             queue.Clear();
         }
 
-        private String MountSubtitle()
+        public String MountSubtitle(bool decreaseDurations = true)
         {
             String subtitle = "";
-
+            
             for(int i=0; i<queue.Count; i++)
             {
-                if (queue[i].Item3 > 0)
-                    subtitle += queue[i] + "\n";
+                if (queue[i].duration > 0)
+                {
+                    subtitle += queue[i].subtitle + "\n";
+
+                    if (decreaseDurations)
+                        queue[i].duration--;
+                }
                 else
                     queue.RemoveAt(i);
             }

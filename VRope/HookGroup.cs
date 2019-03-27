@@ -23,6 +23,9 @@ namespace VRope
         public Vector3 hookPoint1;
         public Vector3 hookPoint2;
 
+        public Vector3 hookOffset1;
+        public Vector3 hookOffset2;
+
         public bool isWinding;
         public bool isUnwinding;
 
@@ -44,16 +47,20 @@ namespace VRope
             this.hookPoint2 = other.hookPoint2;
             this.rope = other.rope;
             this.ropeType = other.ropeType;
+            this.hookOffset1 = other.hookOffset1;
+            this.hookOffset2 = other.hookOffset2;
         }
 
-        public HookGroup(Rope rope, RopeType ropeType, Entity entity1, Vector3 hookPoint1, Entity entity2, Vector3 hookPoint2,
-                         bool isEntity2AMapPosition = false, bool isEntity1APed = false, bool isEntity2APed = false)
+        public HookGroup(Rope rope, RopeType ropeType, Entity entity1, Vector3 hookPoint1, Vector3 hookOffset1, Entity entity2, Vector3 hookPoint2,
+                         Vector3 hookOffset2, bool isEntity2AMapPosition = false, bool isEntity1APed = false, bool isEntity2APed = false)
         {
             this.rope = rope;
             this.entity1 = entity1;
             this.entity2 = entity2;
             this.hookPoint1 = hookPoint1;
             this.hookPoint2 = hookPoint2;
+            this.hookOffset1 = hookOffset1;
+            this.hookOffset2 = hookOffset2;
             this.ropeType = ropeType;
             this.isEntity2AMapPosition = isEntity2AMapPosition;
             this.isWinding = false;
@@ -69,8 +76,10 @@ namespace VRope
             this.isEntity2AMapPosition = false;
             this.isWinding = false;
             this.isUnwinding = false;
-            this.hookPoint1 = new Vector3(0, 0, 0);
-            this.hookPoint2 = new Vector3(0, 0, 0);
+            this.hookPoint1 = Vector3.Zero;
+            this.hookPoint2 = Vector3.Zero;
+            this.hookOffset1 = Vector3.Zero;
+            this.hookOffset2 = Vector3.Zero;
             this.rope = null;
             this.ropeType = (RopeType)4;
         }
