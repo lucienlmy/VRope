@@ -48,7 +48,6 @@ namespace VRope
         private const char SEPARATOR_CHAR = '+';
 
         private SubtitleQueue subQueue = new SubtitleQueue();
-        private Keyboard keyboard = new Keyboard();
 
         private bool ModActive = false;
         public bool ModRunning = false;
@@ -81,8 +80,6 @@ namespace VRope
         private List<Keys> DecreaseForceKey;
         private List<Keys> ApplyForceAttachedPairKey;
 
-        private KeyLists controlKeys = new KeyLists();
-
         private Gamepad AttachPlayerToEntityButton;
         private Gamepad AttachEntityToEntityButton;
         private Gamepad DeleteLastHookButton;
@@ -109,16 +106,14 @@ namespace VRope
                 CONFIG_FILE_NAME = (Directory.GetCurrentDirectory() + "\\scripts\\VRope.ini");
                 ProcessConfigFile();
 
-                keyboard.ExtractUniqueKeys(controlKeys);
-
                 if(ENABLE_XBOX_CONTROLLER_INPUT)
                     XBoxController.CheckForController();
 
                 targetPropModel = new Model("prop_golf_ball"); //We don't talk about this. Keep scrolling.
 
                 Tick += OnTick;
-                //KeyDown += OnKeyDown;
-                //KeyUp += OnKeyUp;
+                KeyDown += OnKeyDown;
+                KeyUp += OnKeyUp;
                 
                 Interval = UPDATE_INTERVAL;
             }
@@ -908,29 +903,12 @@ namespace VRope
         }
 
 
-        public void InitKeyboardInput()
-        {
-            keyboard.ExtractUniqueKeys(controlKeys);
-        }
-
-        private void ProcessKeyboardInput()
-        {
-            keyboard.UpdateStateBegin();
-
-
-
-
-            keyboard.UpdateStateEnd();
-        }
-
         public void OnTick(object sender, EventArgs e)
         {
             try
             {
                 GlobalSubtitle = "";
                 DebugInfo = "";
-
-                ProcessKeyboardInput();
 
                 if (!ModActive)
                 {
@@ -981,59 +959,59 @@ namespace VRope
                     Script.Wait(0);
                     return;
                 }
-                
+
                 //===================================================
-                //else if (Keyboard.IsKeyListPressed(AttachPlayerToEntityKey))
-                //{
-                //    AttachPlayerToEntityProc();
-                //}
-                //else if (Keyboard.IsKeyListPressed(AttachEntityToEntityKey))
-                //{
-                //    AttachEntityToEntityProc();
-                //}
-                //else if (Keyboard.IsKeyListPressed(DeleteAllHooksKey))
-                //{
-                //    DeleteAllHooks();
-                //}
-                //else if (Keyboard.IsKeyListPressed(DeleteLastHookKey))
-                //{
-                //    DeleteLastHookProc();
-                //}
-                //else if (Keyboard.IsKeyListPressed(WindLastHookRopeKey))
-                //{
-                //    SetLastHookRopeWindingProc(true);
-                //}
-                //else if (Keyboard.IsKeyListPressed(WindAllHookRopesKey))
-                //{
-                //    SetAllHookRopesWindingProc(true);
-                //}
-                //else if (Keyboard.IsKeyListPressed(UnwindLastHookRopeKey))
-                //{
-                //    SetLastHookRopeUnwindingProc(true);
-                //}
-                //else if (Keyboard.IsKeyListPressed(UnwindAllHookRopesKey))
-                //{
-                //    SetAllHookRopesUnwindingProc(true);
-                //}
+                if (Keyboard.IsKeyListPressed(AttachPlayerToEntityKey))
+                {
+                    AttachPlayerToEntityProc();
+                }
+                else if (Keyboard.IsKeyListPressed(AttachEntityToEntityKey))
+                {
+                    AttachEntityToEntityProc();
+                }
+                else if (Keyboard.IsKeyListPressed(DeleteAllHooksKey))
+                {
+                    DeleteAllHooks();
+                }
+                else if (Keyboard.IsKeyListPressed(DeleteLastHookKey))
+                {
+                    DeleteLastHookProc();
+                }
+                else if (Keyboard.IsKeyListPressed(WindLastHookRopeKey))
+                {
+                    SetLastHookRopeWindingProc(true);
+                }
+                else if (Keyboard.IsKeyListPressed(WindAllHookRopesKey))
+                {
+                    SetAllHookRopesWindingProc(true);
+                }
+                else if (Keyboard.IsKeyListPressed(UnwindLastHookRopeKey))
+                {
+                    SetLastHookRopeUnwindingProc(true);
+                }
+                else if (Keyboard.IsKeyListPressed(UnwindAllHookRopesKey))
+                {
+                    SetAllHookRopesUnwindingProc(true);
+                }
 
-                //else if(!CONTINUOUS_FORCE && Keyboard.IsKeyListPressed(ApplyForceKey))
-                //{
-                //    ApplyForceProc(false);
-                //}
-                //else if (!CONTINUOUS_FORCE && Keyboard.IsKeyListPressed(ApplyInvertedForceKey))
-                //{
-                //    ApplyForceProc(true);
-                //}
+                else if (!CONTINUOUS_FORCE && Keyboard.IsKeyListPressed(ApplyForceKey))
+                {
+                    ApplyForceProc(false);
+                }
+                else if (!CONTINUOUS_FORCE && Keyboard.IsKeyListPressed(ApplyInvertedForceKey))
+                {
+                    ApplyForceProc(true);
+                }
 
-                //else if(Keyboard.IsKeyListPressed(ApplyForceAttachedPairKey))
-                //{
-                //    ApplyForceAttachedPairProc();
-                //}
+                else if (Keyboard.IsKeyListPressed(ApplyForceAttachedPairKey))
+                {
+                    ApplyForceAttachedPairProc();
+                }
 
-                //else if (Keyboard.IsKeyListPressed(ToggleDebugInfoKey))
-                //{
-                //    DebugMode = !DebugMode;
-                //}
+                else if (Keyboard.IsKeyListPressed(ToggleDebugInfoKey))
+                {
+                    DebugMode = !DebugMode;
+                }
             }
             catch (Exception exc)
             {
@@ -1051,22 +1029,22 @@ namespace VRope
                     return;
                 }
 
-                //if (e.KeyCode == Keys.Y)
-                //{
-                //    SetLastHookRopeWindingProc(false);
-                //}
-                //else if (e.KeyCode == Keys.J)
-                //{
-                //    SetAllHookRopesWindingProc(false);
-                //}
-                //else if (Keyboard.IsKeyListPressed(UnwindLastHookRopeKey))
-                //{
-                //    SetLastHookRopeUnwindingProc(false);
-                //}
-                //else if (Keyboard.IsKeyListPressed(UnwindAllHookRopesKey))
-                //{
-                //    SetAllHookRopesUnwindingProc(false);
-                //}
+                if (e.KeyCode == Keys.Y)
+                {
+                    SetLastHookRopeWindingProc(false);
+                }
+                else if (e.KeyCode == Keys.J)
+                {
+                    SetAllHookRopesWindingProc(false);
+                }
+                else if (Keyboard.IsKeyListPressed(UnwindLastHookRopeKey))
+                {
+                    SetLastHookRopeUnwindingProc(false);
+                }
+                else if (Keyboard.IsKeyListPressed(UnwindAllHookRopesKey))
+                {
+                    SetAllHookRopesUnwindingProc(false);
+                }
             }
             catch (Exception exc)
             {
