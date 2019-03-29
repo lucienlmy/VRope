@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace VRope
 {
-    public class Pair<T, U>
+    class Pair<T, U>
     {
+        public T first;
+        public U second;
+
         public Pair()
         {
-            
         }
 
         public Pair(T first, U second)
@@ -18,8 +15,13 @@ namespace VRope
             this.first = first;
             this.second = second;
         }
+    }
 
-        public T first;
-        public U second;
-    };
+    static class Pair
+    {
+        public static Pair<T, U> Make<T, U>(T t, U u)
+        {
+            return new Pair<T, U>(t, u);
+        }
+    }
 }
