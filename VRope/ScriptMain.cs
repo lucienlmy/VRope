@@ -65,23 +65,7 @@ namespace VRope
         private Dictionary<String, Pair<List<Keys>, Action>> controlKeys = new Dictionary<string, Pair<List<Keys>, Action>>(30);
         private List<Pair<List<Keys>, Action>> keyListPairs = new List<Pair<List<Keys>, Action>>(30);
 
-        //private Dictionary<String, Pair<ControllerState, Action>> controlButtons = new Dictionary<string, Pair<ControllerState, Action>>(30);
-        private List<Tuple<String, ControllerState, Action>> controlButtons = new List<Tuple<string, ControllerState, Action>>(30);
-
-        //private Gamepad AttachPlayerToEntityButton;
-        //private Gamepad AttachEntityToEntityButton;
-        //private Gamepad DeleteLastHookButton;
-        //private Gamepad DeleteAllHooksButton;
-        //private Gamepad WindLastHookRopeButton;
-        //private Gamepad WindAllHookRopesButton;
-        //private Gamepad UnwindLastHookRopeButton;
-        //private Gamepad UnwindAllHookRopesButton;
-        //private Gamepad ApplyForceButton;
-        //private Gamepad ApplyInvertedForceButton;
-        //private Gamepad IncreaseForceButton;
-        //private Gamepad DecreaseForceButton;
-        //private Gamepad ApplyForceObjectPairButton;
-        //private Gamepad ApplyForcePlayerButton;
+        private List<Tuple<String, ControllerState, Action, TriggerCondition>> controlButtons = new List<Tuple<string, ControllerState, Action, TriggerCondition>>(30);
 
         private RopeType EntityToEntityHookRopeType;
         private RopeType PlayerToEntityHookRopeType;
@@ -103,7 +87,7 @@ namespace VRope
                     XBoxController.CheckForController();
 
                     if (XBoxController.IsControllerConnected())
-                        InitButtonTuples();
+                        SortButtonTuples();
                 }
 
                 targetPropModel = new Model("prop_golf_ball"); //We don't talk about this. Keep scrolling.
@@ -229,7 +213,7 @@ namespace VRope
             }
         }
 
-        private void InitButtonTuples()
+        private void SortButtonTuples()
         {
             for (int i = 0; i < controlButtons.Count; i++)
             {
@@ -285,64 +269,68 @@ namespace VRope
 
         private void RetrieveControllerButtonsFromConfig(ScriptSettings settings)
         {
-            //AttachPlayerToEntityButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "AttachPlayerToEntityButton", "None"));
-            //AttachEntityToEntityButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "AttachEntityToEntityButton", "None"));
-            //DeleteLastHookButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "DeleteLastHookButton", "None"));
-            //DeleteAllHooksButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "DeleteAllHooksButton", "None"));
-            //WindLastHookRopeButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "WindLastHookRopeButton", "None"));
-            //WindAllHookRopesButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "WindAllHookRopesButton", "None"));
-            //UnwindLastHookRopeButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "UnwindLastHookRopeButton", "None"));
-            //UnwindAllHookRopesButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "UnwindAllHookRopesButton", "None"));
-            //ApplyForceButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "ApplyForceButton", "None"));
-            //ApplyInvertedForceButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "ApplyInvertedForceButton", "None"));
-            //IncreaseForceButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "IncreaseForceButton", "None"));
-            //DecreaseForceButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "DecreaseForceButton", "None"));
-            //ApplyForceObjectPairButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "ApplyForceObjectPairButton", "None"));
-            //ApplyForcePlayerButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "ApplyForcePlayerButton", "None"));
-
             controlButtons.Add(Tuple.Create("AttachPlayerToEntityButton", 
                 TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "AttachPlayerToEntityButton", "None")),
-                (Action)AttachPlayerToEntityProc));
+                (Action)AttachPlayerToEntityProc, TriggerCondition.PRESSED));
             controlButtons.Add(Tuple.Create("AttachEntityToEntityButton", 
                 TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "AttachEntityToEntityButton", "None")),
-                (Action)AttachEntityToEntityProc));
+                (Action)AttachEntityToEntityProc, TriggerCondition.PRESSED));
             controlButtons.Add(Tuple.Create("DeleteLastHookButton",
                 TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "DeleteLastHookButton", "None")),
-                (Action)DeleteLastHookProc));
+                (Action)DeleteLastHookProc, TriggerCondition.PRESSED));
             controlButtons.Add(Tuple.Create("DeleteAllHooksButton",
                 TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "DeleteAllHooksButton", "None")),
-                (Action)DeleteAllHooks));
+                (Action)DeleteAllHooks, TriggerCondition.PRESSED));
             controlButtons.Add(Tuple.Create("WindLastHookRopeButton",
+
                 TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "WindLastHookRopeButton", "None")),
-                (Action)delegate { SetLastHookRopeWindingProc(true); }));
+                (Action)delegate { SetLastHookRopeWindingProc(true); }, TriggerCondition.HELD));
             controlButtons.Add(Tuple.Create("WindAllHookRopesButton",
                 TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "WindAllHookRopesButton", "None")),
-                (Action)delegate { SetAllHookRopesWindingProc(true); }));
+                (Action)delegate { SetAllHookRopesWindingProc(true); }, TriggerCondition.HELD));
             controlButtons.Add(Tuple.Create("UnwindLastHookRopeButton",
                 TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "UnwindLastHookRopeButton", "None")),
-                (Action)delegate { SetLastHookRopeUnwindingProc(true); }));
+                (Action)delegate { SetLastHookRopeUnwindingProc(true); }, TriggerCondition.HELD));
             controlButtons.Add(Tuple.Create("UnwindAllHookRopesButton",
                 TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "UnwindAllHookRopesButton", "None")),
-                (Action)delegate { SetAllHookRopesUnwindingProc(true); }));
+                (Action)delegate { SetAllHookRopesUnwindingProc(true); }, TriggerCondition.HELD));
+
             controlButtons.Add(Tuple.Create("ApplyForceButton",
             TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "ApplyForceButton", "None")),
-                (Action)delegate { ApplyForceAtAimedProc(false); }));
+                (Action)delegate { ApplyForceAtAimedProc(false); }, TriggerCondition.CUSTOM));
             controlButtons.Add(Tuple.Create("ApplyInvertedForceButton",
             TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "ApplyInvertedForceButton", "None")),
-                (Action)delegate { ApplyForceAtAimedProc(true); }));
+                (Action)delegate { ApplyForceAtAimedProc(true); }, TriggerCondition.CUSTOM));
             controlButtons.Add(Tuple.Create("IncreaseForceButton",
+
             TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "IncreaseForceButton", "None")),
-                (Action)delegate { IncrementForceValueProc(false); }));
+                (Action)delegate { IncrementForceValueProc(false); }, TriggerCondition.HELD));
             controlButtons.Add(Tuple.Create("DecreaseForceButton",
             TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "DecreaseForceButton", "None")),
-                (Action)delegate { IncrementForceValueProc(true); }));
+                (Action)delegate { IncrementForceValueProc(true); }, TriggerCondition.HELD));
             controlButtons.Add(Tuple.Create("ApplyForceObjectPairButton",
             TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "ApplyForceObjectPairButton", "None")),
-                (Action)ApplyForceObjectPairProc));
+                (Action)ApplyForceObjectPairProc, TriggerCondition.PRESSED));
+
             controlButtons.Add(Tuple.Create("ApplyForcePlayerButton",
             TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "ApplyForcePlayerButton", "None")),
-                (Action)ApplyForcePlayerProc));
+                (Action)ApplyForcePlayerProc, TriggerCondition.NONE)); //DISABLED
+
+
+            controlButtons.Add(Tuple.Create("WindLastHookRopeButton",
+                TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "WindLastHookRopeButton", "None")),
+                (Action)delegate { SetLastHookRopeWindingProc(false); }, TriggerCondition.RELEASED));
+            controlButtons.Add(Tuple.Create("WindAllHookRopesButton",
+                TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "WindAllHookRopesButton", "None")),
+                (Action)delegate { SetAllHookRopesWindingProc(false); }, TriggerCondition.RELEASED));
+            controlButtons.Add(Tuple.Create("UnwindLastHookRopeButton",
+                TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "UnwindLastHookRopeButton", "None")),
+                (Action)delegate { SetLastHookRopeUnwindingProc(false); }, TriggerCondition.RELEASED));
+            controlButtons.Add(Tuple.Create("UnwindAllHookRopesButton",
+                TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "UnwindAllHookRopesButton", "None")),
+                (Action)delegate { SetAllHookRopesUnwindingProc(false); }, TriggerCondition.RELEASED));
         }
+
 
         private void ProcessConfigFile()
         {
@@ -946,67 +934,31 @@ namespace VRope
                 var buttonTuple = controlButtons[i];
                 String buttonName = buttonTuple.Item1;
                 Gamepad buttonData = buttonTuple.Item2.buttonData;
-                Action buttonCallback = buttonTuple.Item3;
+                TriggerCondition condition = buttonTuple.Item4;
+                Action callback = buttonTuple.Item3;
 
-                if(buttonName == "ApplyForceButton" || buttonName == "ApplyInvertedForceButton" ||
-                    buttonName == "ApplyForcePlayerButton")
+                if( (condition == TriggerCondition.PRESSED && XBoxController.WasControllerButtonPressed(buttonData)) ||
+                    (condition == TriggerCondition.RELEASED && XBoxController.WasControllerButtonReleased(buttonData)) ||
+                    (condition == TriggerCondition.HELD && XBoxController.IsControllerButtonPressed(buttonData)) ||
+                    (condition == TriggerCondition.ANY))
                 {
-                    if( (CONTINUOUS_FORCE && XBoxController.IsControllerButtonPressed(buttonData)) ||
-                        (!CONTINUOUS_FORCE && XBoxController.WasControllerButtonPressed(buttonData)))
+                    callback.Invoke();
+                    break;
+                }
+                else if(condition == TriggerCondition.CUSTOM)
+                {
+                    if(buttonName == "ApplyForceKey" || buttonName == "ApplyInvertedForceKey")
                     {
-                        buttonCallback.Invoke();
+                        if ((CONTINUOUS_FORCE && XBoxController.IsControllerButtonPressed(buttonData)) ||
+                            (!CONTINUOUS_FORCE && XBoxController.WasControllerButtonPressed(buttonData)))
+                        {
+                            callback.Invoke();
+                            break;
+                        }
                     }
                 }
-                else if(buttonName.Contains("HookRope") && 
-                    (XBoxController.WasControllerButtonPressed(buttonData) || 
-                    XBoxController.WasControllerButtonReleased(buttonData)))
-                {
-                    buttonCallback.Invoke();
-                }
-                else if(XBoxController.WasControllerButtonPressed(buttonData))
-                {
-                    buttonCallback.Invoke();
-                }
+                
             }
-
-            //if (XBoxController.WasControllerButtonPressed(AttachPlayerToEntityButton))
-            //    AttachPlayerToEntityProc();
-            //else if (XBoxController.WasControllerButtonPressed(AttachEntityToEntityButton))
-            //    AttachEntityToEntityProc();
-            //else if (XBoxController.WasControllerButtonPressed(DeleteLastHookButton))
-            //    DeleteLastHookProc();
-            //else if (XBoxController.WasControllerButtonPressed(DeleteAllHooksButton))
-            //    DeleteAllHooks();
-
-            //else if (CONTINUOUS_FORCE && XBoxController.IsControllerButtonPressed(ApplyForceButton))
-            //    ApplyForceAtAimedProc(false);
-            //else if (CONTINUOUS_FORCE && XBoxController.IsControllerButtonPressed(ApplyInvertedForceButton))
-            //    ApplyForceAtAimedProc(true);
-            //else if (!CONTINUOUS_FORCE && XBoxController.WasControllerButtonPressed(ApplyForceButton))
-            //    ApplyForceAtAimedProc(false);
-            //else if (!CONTINUOUS_FORCE && XBoxController.WasControllerButtonPressed(ApplyInvertedForceButton))
-            //    ApplyForceAtAimedProc(true);
-
-            //else if (XBoxController.WasControllerButtonPressed(UnwindLastHookRopeButton))
-            //    SetLastHookRopeUnwindingProc(true);
-            //else if (XBoxController.WasControllerButtonPressed(WindLastHookRopeButton))
-            //    SetLastHookRopeWindingProc(true);
-            //else if (XBoxController.WasControllerButtonPressed(UnwindAllHookRopesButton))
-            //    SetAllHookRopesUnwindingProc(true);
-            //else if (XBoxController.WasControllerButtonPressed(WindAllHookRopesButton))
-            //    SetAllHookRopesWindingProc(true);
-
-            //else if (XBoxController.WasControllerButtonPressed(ApplyForceObjectPairButton))
-            //    ApplyForceObjectPairProc();
-            //else if (XBoxController.WasControllerButtonPressed(ApplyForcePlayerButton))
-            //    ApplyForcePlayerProc();
-
-            //if (XBoxController.WasControllerButtonReleased(UnwindAllHookRopesButton) ||
-            //        XBoxController.WasControllerButtonReleased(UnwindLastHookRopeButton))
-            //    SetAllHookRopesUnwindingProc(false);
-            //else if (XBoxController.WasControllerButtonReleased(WindLastHookRopeButton) ||
-            //        XBoxController.WasControllerButtonReleased(WindAllHookRopesButton))
-            //    SetAllHookRopesWindingProc(false);
 
             XBoxController.UpdateStateEnd();
         }
@@ -1118,59 +1070,6 @@ namespace VRope
                         break;
                     }
                 }
-
-                //===================================================
-                //if (Keyboard.IsKeyListPressed(AttachPlayerToEntityKey))
-                //{
-                //    AttachPlayerToEntityProc();
-                //}
-                //else if (Keyboard.IsKeyListPressed(AttachEntityToEntityKey))
-                //{
-                //    AttachEntityToEntityProc();
-                //}
-                //else if (Keyboard.IsKeyListPressed(DeleteAllHooksKey))
-                //{
-                //    DeleteAllHooks();
-                //}
-                //else if (Keyboard.IsKeyListPressed(DeleteLastHookKey))
-                //{
-                //    DeleteLastHookProc();
-                //}
-                //else if (Keyboard.IsKeyListPressed(WindLastHookRopeKey))
-                //{
-                //    SetLastHookRopeWindingProc(true);
-                //}
-                //else if (Keyboard.IsKeyListPressed(WindAllHookRopesKey))
-                //{
-                //    SetAllHookRopesWindingProc(true);
-                //}
-                //else if (Keyboard.IsKeyListPressed(UnwindLastHookRopeKey))
-                //{
-                //    SetLastHookRopeUnwindingProc(true);
-                //}
-                //else if (Keyboard.IsKeyListPressed(UnwindAllHookRopesKey))
-                //{
-                //    SetAllHookRopesUnwindingProc(true);
-                //}
-
-                //else if (!CONTINUOUS_FORCE && Keyboard.IsKeyListPressed(ApplyForceKey))
-                //{
-                //    ApplyForceProc(false);
-                //}
-                //else if (!CONTINUOUS_FORCE && Keyboard.IsKeyListPressed(ApplyInvertedForceKey))
-                //{
-                //    ApplyForceProc(true);
-                //}
-
-                //else if (Keyboard.IsKeyListPressed(ApplyForceAttachedPairKey))
-                //{
-                //    ApplyForceAttachedPairProc();
-                //}
-
-                //else if (Keyboard.IsKeyListPressed(ToggleDebugInfoKey))
-                //{
-                //    DebugMode = !DebugMode;
-                //}
             }
             catch (Exception exc)
             {
