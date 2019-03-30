@@ -40,6 +40,11 @@ namespace VRope
             }
         }
 
+        public static bool IsKeyUp(Keys key)
+        {
+            return !IsKeyPressed(key);
+        }
+
         public static bool IsKeyListPressed(List<Keys> keys)
         {
             if (keys == null || keys.Count == 0)
@@ -59,5 +64,18 @@ namespace VRope
             return isPressed;
         }
 
+        public static bool IsKeyListUp(List<Keys> keys, Keys eventKeyUp)
+        {
+            if (keys == null || keys.Count == 0)
+                return false;
+
+            for (int i = 0; i < keys.Count; i++)
+            {
+                if (keys[i] == eventKeyUp && IsKeyUp(keys[i]))
+                    return true;
+            }
+
+            return false;
+        }
     }
 }

@@ -4,18 +4,6 @@ using SharpDX.XInput;
 
 namespace VRope
 {
-    public enum TriggerCondition
-    {
-        NONE = 0,
-
-        PRESSED,
-        HELD,
-        RELEASED,
-
-        ANY,
-        CUSTOM
-    }
-
     public struct ControllerState
     {
         public Gamepad buttonData;
