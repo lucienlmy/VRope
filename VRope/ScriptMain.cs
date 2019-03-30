@@ -35,8 +35,6 @@ namespace VRope
         private float MIN_ROPE_LENGTH; 
         private float MAX_HOOK_CREATION_DISTANCE; 
         private float MAX_HOOKED_ENTITY_DISTANCE;
-        private byte LEFT_TRIGGER_THRESHOLD;
-        private byte RIGHT_TRIGGER_THRESHOLD;
 
         private bool CONTINUOUS_FORCE;
         private int FORCE_INCREMENT_VALUE;
@@ -65,22 +63,25 @@ namespace VRope
         private Pair<Vector3, Vector3> prevEntityPosition = new Pair<Vector3, Vector3>();
 
         private Dictionary<String, Pair<List<Keys>, Action>> controlKeys = new Dictionary<string, Pair<List<Keys>, Action>>(30);
-        private List<Pair<List<Keys>, Action>> keyListPairs = new List<Pair<List<Keys>, Action>>(20);
+        private List<Pair<List<Keys>, Action>> keyListPairs = new List<Pair<List<Keys>, Action>>(30);
 
-        private Gamepad AttachPlayerToEntityButton;
-        private Gamepad AttachEntityToEntityButton;
-        private Gamepad DeleteLastHookButton;
-        private Gamepad DeleteAllHooksButton;
-        private Gamepad WindLastHookRopeButton;
-        private Gamepad WindAllHookRopesButton;
-        private Gamepad UnwindLastHookRopeButton;
-        private Gamepad UnwindAllHookRopesButton;
-        private Gamepad ApplyForceButton;
-        private Gamepad ApplyInvertedForceButton;
-        private Gamepad IncreaseForceButton;
-        private Gamepad DecreaseForceButton;
-        private Gamepad ApplyForceObjectPairButton;
-        private Gamepad ApplyForcePlayerButton;
+        //private Dictionary<String, Pair<ControllerState, Action>> controlButtons = new Dictionary<string, Pair<ControllerState, Action>>(30);
+        private List<Tuple<String, ControllerState, Action>> controlButtons = new List<Tuple<string, ControllerState, Action>>(30);
+
+        //private Gamepad AttachPlayerToEntityButton;
+        //private Gamepad AttachEntityToEntityButton;
+        //private Gamepad DeleteLastHookButton;
+        //private Gamepad DeleteAllHooksButton;
+        //private Gamepad WindLastHookRopeButton;
+        //private Gamepad WindAllHookRopesButton;
+        //private Gamepad UnwindLastHookRopeButton;
+        //private Gamepad UnwindAllHookRopesButton;
+        //private Gamepad ApplyForceButton;
+        //private Gamepad ApplyInvertedForceButton;
+        //private Gamepad IncreaseForceButton;
+        //private Gamepad DecreaseForceButton;
+        //private Gamepad ApplyForceObjectPairButton;
+        //private Gamepad ApplyForcePlayerButton;
 
         private RopeType EntityToEntityHookRopeType;
         private RopeType PlayerToEntityHookRopeType;
@@ -97,8 +98,13 @@ namespace VRope
 
                 InitKeyListPairs();
 
-                if(ENABLE_XBOX_CONTROLLER_INPUT)
+                if (ENABLE_XBOX_CONTROLLER_INPUT)
+                {
                     XBoxController.CheckForController();
+
+                    if (XBoxController.IsControllerConnected())
+                        InitButtonTuples();
+                }
 
                 targetPropModel = new Model("prop_golf_ball"); //We don't talk about this. Keep scrolling.
 
@@ -128,10 +134,10 @@ namespace VRope
             return ("v" + version.Major + "." + VERSION_MINOR + "." + VERSION_BUILD + "." + version.Revision + VERSION_SUFFIX);
         }
 
-        private Gamepad TranslateButtonStringToButtonData(String buttonData)
+        private ControllerState TranslateButtonStringToButtonData(String buttonData)
         {
             if (buttonData == null || buttonData.Length == 0)
-                return new Gamepad();
+                return new ControllerState();
 
             buttonData = buttonData.Replace(" ", "");
 
@@ -151,15 +157,15 @@ namespace VRope
                 }
                 else if(buttonStrings[i] == "LeftTrigger")
                 {
-                    resultData.LeftTrigger = LEFT_TRIGGER_THRESHOLD;
+                    resultData.LeftTrigger = XBoxController.LEFT_TRIGGER_THRESHOLD;
                 }
                 else if(buttonStrings[i] == "RightTrigger")
                 {
-                    resultData.RightTrigger = RIGHT_TRIGGER_THRESHOLD;
+                    resultData.RightTrigger = XBoxController.RIGHT_TRIGGER_THRESHOLD;
                 }
             }
 
-            return resultData;
+            return new ControllerState(resultData, XBoxController.GetButtonPressedCount(resultData));
         }
         
         private List<Keys> TranslateKeyDataToKeyList(String keyData)
@@ -223,6 +229,23 @@ namespace VRope
             }
         }
 
+        private void InitButtonTuples()
+        {
+            for (int i = 0; i < controlButtons.Count; i++)
+            {
+                for (int j = 0; j < controlButtons.Count - 1; j++)
+                {
+                    if (controlButtons[j].Item2.buttonPressedCount < controlButtons[j + 1].Item2.buttonPressedCount)
+                    {
+                        var buttonPair = controlButtons[j];
+
+                        controlButtons[j] = controlButtons[j + 1];
+                        controlButtons[j + 1] = buttonPair;
+                    }
+                }
+            }
+        }
+
         private void RetrieveKeysFromConfig(ScriptSettings settings)
         {
             controlKeys.Add("ToggleModActiveKey", Pair.Make(TranslateKeyDataToKeyList(settings.GetValue<String>("CONTROL_KEYBOARD", "ToggleModActiveKey", "None")),
@@ -262,20 +285,63 @@ namespace VRope
 
         private void RetrieveControllerButtonsFromConfig(ScriptSettings settings)
         {
-            AttachPlayerToEntityButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "AttachPlayerToEntityButton", "None"));
-            AttachEntityToEntityButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "AttachEntityToEntityButton", "None"));
-            DeleteLastHookButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "DeleteLastHookButton", "None"));
-            DeleteAllHooksButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "DeleteAllHooksButton", "None"));
-            WindLastHookRopeButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "WindLastHookRopeButton", "None"));
-            WindAllHookRopesButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "WindAllHookRopesButton", "None"));
-            UnwindLastHookRopeButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "UnwindLastHookRopeButton", "None"));
-            UnwindAllHookRopesButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "UnwindAllHookRopesButton", "None"));
-            ApplyForceButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "ApplyForceButton", "None"));
-            ApplyInvertedForceButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "ApplyInvertedForceButton", "None"));
-            IncreaseForceButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "IncreaseForceButton", "None"));
-            DecreaseForceButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "DecreaseForceButton", "None"));
-            ApplyForceObjectPairButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "ApplyForceObjectPairButton", "None"));
-            ApplyForcePlayerButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "ApplyForcePlayerButton", "None"));
+            //AttachPlayerToEntityButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "AttachPlayerToEntityButton", "None"));
+            //AttachEntityToEntityButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "AttachEntityToEntityButton", "None"));
+            //DeleteLastHookButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "DeleteLastHookButton", "None"));
+            //DeleteAllHooksButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "DeleteAllHooksButton", "None"));
+            //WindLastHookRopeButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "WindLastHookRopeButton", "None"));
+            //WindAllHookRopesButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "WindAllHookRopesButton", "None"));
+            //UnwindLastHookRopeButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "UnwindLastHookRopeButton", "None"));
+            //UnwindAllHookRopesButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "UnwindAllHookRopesButton", "None"));
+            //ApplyForceButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "ApplyForceButton", "None"));
+            //ApplyInvertedForceButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "ApplyInvertedForceButton", "None"));
+            //IncreaseForceButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "IncreaseForceButton", "None"));
+            //DecreaseForceButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "DecreaseForceButton", "None"));
+            //ApplyForceObjectPairButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "ApplyForceObjectPairButton", "None"));
+            //ApplyForcePlayerButton = TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "ApplyForcePlayerButton", "None"));
+
+            controlButtons.Add(Tuple.Create("AttachPlayerToEntityButton", 
+                TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "AttachPlayerToEntityButton", "None")),
+                (Action)AttachPlayerToEntityProc));
+            controlButtons.Add(Tuple.Create("AttachEntityToEntityButton", 
+                TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "AttachEntityToEntityButton", "None")),
+                (Action)AttachEntityToEntityProc));
+            controlButtons.Add(Tuple.Create("DeleteLastHookButton",
+                TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "DeleteLastHookButton", "None")),
+                (Action)DeleteLastHookProc));
+            controlButtons.Add(Tuple.Create("DeleteAllHooksButton",
+                TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "DeleteAllHooksButton", "None")),
+                (Action)DeleteAllHooks));
+            controlButtons.Add(Tuple.Create("WindLastHookRopeButton",
+                TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "WindLastHookRopeButton", "None")),
+                (Action)delegate { SetLastHookRopeWindingProc(true); }));
+            controlButtons.Add(Tuple.Create("WindAllHookRopesButton",
+                TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "WindAllHookRopesButton", "None")),
+                (Action)delegate { SetAllHookRopesWindingProc(true); }));
+            controlButtons.Add(Tuple.Create("UnwindLastHookRopeButton",
+                TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "UnwindLastHookRopeButton", "None")),
+                (Action)delegate { SetLastHookRopeUnwindingProc(true); }));
+            controlButtons.Add(Tuple.Create("UnwindAllHookRopesButton",
+                TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "UnwindAllHookRopesButton", "None")),
+                (Action)delegate { SetAllHookRopesUnwindingProc(true); }));
+            controlButtons.Add(Tuple.Create("ApplyForceButton",
+            TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "ApplyForceButton", "None")),
+                (Action)delegate { ApplyForceAtAimedProc(false); }));
+            controlButtons.Add(Tuple.Create("ApplyInvertedForceButton",
+            TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "ApplyInvertedForceButton", "None")),
+                (Action)delegate { ApplyForceAtAimedProc(true); }));
+            controlButtons.Add(Tuple.Create("IncreaseForceButton",
+            TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "IncreaseForceButton", "None")),
+                (Action)delegate { IncrementForceValueProc(false); }));
+            controlButtons.Add(Tuple.Create("DecreaseForceButton",
+            TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "DecreaseForceButton", "None")),
+                (Action)delegate { IncrementForceValueProc(true); }));
+            controlButtons.Add(Tuple.Create("ApplyForceObjectPairButton",
+            TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "ApplyForceObjectPairButton", "None")),
+                (Action)ApplyForceObjectPairProc));
+            controlButtons.Add(Tuple.Create("ApplyForcePlayerButton",
+            TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "ApplyForcePlayerButton", "None")),
+                (Action)ApplyForcePlayerProc));
         }
 
         private void ProcessConfigFile()
@@ -298,8 +364,8 @@ namespace VRope
                 MAX_HOOK_CREATION_DISTANCE = settings.GetValue<float>("GLOBAL_VARS", "MAX_HOOK_CREATION_DISTANCE", 70);
                 MAX_HOOKED_ENTITY_DISTANCE = settings.GetValue<float>("GLOBAL_VARS", "MAX_HOOKED_ENTITY_DISTANCE", 145);
 
-                LEFT_TRIGGER_THRESHOLD = settings.GetValue<byte>("CONTROL_XBOX_CONTROLLER", "LEFT_TRIGGER_THRESHOLD", 255);
-                RIGHT_TRIGGER_THRESHOLD = settings.GetValue<byte>("CONTROL_XBOX_CONTROLLER", "RIGHT_TRIGGER_THRESHOLD", 255);
+                XBoxController.LEFT_TRIGGER_THRESHOLD = settings.GetValue<byte>("CONTROL_XBOX_CONTROLLER", "LEFT_TRIGGER_THRESHOLD", 255);
+                XBoxController.RIGHT_TRIGGER_THRESHOLD = settings.GetValue<byte>("CONTROL_XBOX_CONTROLLER", "RIGHT_TRIGGER_THRESHOLD", 255);
 
                 EntityToEntityHookRopeType = settings.GetValue<RopeType>("HOOK_ROPE_TYPES", "EntityToEntityHookRopeType", (RopeType)4);
                 PlayerToEntityHookRopeType = settings.GetValue<RopeType>("HOOK_ROPE_TYPES", "PlayerToEntityHookRopeType", (RopeType)3);
@@ -310,7 +376,8 @@ namespace VRope
 
                 RetrieveKeysFromConfig(settings);
 
-                RetrieveControllerButtonsFromConfig(settings);
+                if(ENABLE_XBOX_CONTROLLER_INPUT)
+                    RetrieveControllerButtonsFromConfig(settings);
             }
             catch (Exception e)
             {
@@ -661,6 +728,13 @@ namespace VRope
             }
         }
 
+        private void IncrementForceValueProc(bool negativeIncrement = false)
+        {
+            if (!negativeIncrement)
+                ForceMagnitude += FORCE_INCREMENT_VALUE;
+            else
+                ForceMagnitude -= FORCE_INCREMENT_VALUE;
+        }
 
         private void ApplyForce(Vector3 entity1HookPosition, Vector3 entity2HookPosition)
         {
@@ -867,48 +941,72 @@ namespace VRope
         {
             XBoxController.UpdateStateBegin();
 
-            if (XBoxController.WasControllerButtonPressed(AttachPlayerToEntityButton))
-                AttachPlayerToEntityProc();
-            else if (XBoxController.WasControllerButtonPressed(AttachEntityToEntityButton))
-                AttachEntityToEntityProc();
-            else if (XBoxController.WasControllerButtonPressed(DeleteLastHookButton))
-                DeleteLastHookProc();
-            else if (XBoxController.WasControllerButtonPressed(DeleteAllHooksButton))
-                DeleteAllHooks();
+            for(int i=0; i<controlButtons.Count; i++)
+            {
+                var buttonTuple = controlButtons[i];
+                String buttonName = buttonTuple.Item1;
+                Gamepad buttonData = buttonTuple.Item2.buttonData;
+                Action buttonCallback = buttonTuple.Item3;
 
-            else if (CONTINUOUS_FORCE && XBoxController.IsControllerButtonPressed(ApplyForceButton))
-                ApplyForceAtAimedProc(false);
-            else if (CONTINUOUS_FORCE && XBoxController.IsControllerButtonPressed(ApplyInvertedForceButton))
-                ApplyForceAtAimedProc(true);
-            else if (!CONTINUOUS_FORCE && XBoxController.WasControllerButtonPressed(ApplyForceButton))
-                ApplyForceAtAimedProc(false);
-            else if (!CONTINUOUS_FORCE && XBoxController.WasControllerButtonPressed(ApplyInvertedForceButton))
-                ApplyForceAtAimedProc(true);
+                if(buttonName == "ApplyForceButton" || buttonName == "ApplyInvertedForceButton" ||
+                    buttonName == "ApplyForcePlayerButton")
+                {
+                    if( (CONTINUOUS_FORCE && XBoxController.IsControllerButtonPressed(buttonData)) ||
+                        (!CONTINUOUS_FORCE && XBoxController.WasControllerButtonPressed(buttonData)))
+                    {
+                        buttonCallback.Invoke();
+                    }
+                }
+                else if(buttonName.Contains("HookRope") && 
+                    (XBoxController.WasControllerButtonPressed(buttonData) || 
+                    XBoxController.WasControllerButtonReleased(buttonData)))
+                {
+                    buttonCallback.Invoke();
+                }
+                else if(XBoxController.WasControllerButtonPressed(buttonData))
+                {
+                    buttonCallback.Invoke();
+                }
+            }
 
-            else if (XBoxController.WasControllerButtonPressed(UnwindLastHookRopeButton))
-                SetLastHookRopeUnwindingProc(true);
-            else if (XBoxController.WasControllerButtonPressed(WindLastHookRopeButton))
-                SetLastHookRopeWindingProc(true);
-            else if (XBoxController.WasControllerButtonPressed(UnwindAllHookRopesButton))
-                SetAllHookRopesUnwindingProc(true);
-            else if (XBoxController.WasControllerButtonPressed(WindAllHookRopesButton))
-                SetAllHookRopesWindingProc(true);
+            //if (XBoxController.WasControllerButtonPressed(AttachPlayerToEntityButton))
+            //    AttachPlayerToEntityProc();
+            //else if (XBoxController.WasControllerButtonPressed(AttachEntityToEntityButton))
+            //    AttachEntityToEntityProc();
+            //else if (XBoxController.WasControllerButtonPressed(DeleteLastHookButton))
+            //    DeleteLastHookProc();
+            //else if (XBoxController.WasControllerButtonPressed(DeleteAllHooksButton))
+            //    DeleteAllHooks();
 
-            else if (XBoxController.WasControllerButtonPressed(ApplyForceButton))
-                ApplyForceAtAimedProc(false);
-            else if (XBoxController.WasControllerButtonPressed(ApplyInvertedForceButton))
-                ApplyForceAtAimedProc(true);
-            else if (XBoxController.WasControllerButtonPressed(ApplyForceObjectPairButton))
-                ApplyForceObjectPairProc();
-            else if (XBoxController.WasControllerButtonPressed(ApplyForcePlayerButton))
-                ApplyForcePlayerProc();
+            //else if (CONTINUOUS_FORCE && XBoxController.IsControllerButtonPressed(ApplyForceButton))
+            //    ApplyForceAtAimedProc(false);
+            //else if (CONTINUOUS_FORCE && XBoxController.IsControllerButtonPressed(ApplyInvertedForceButton))
+            //    ApplyForceAtAimedProc(true);
+            //else if (!CONTINUOUS_FORCE && XBoxController.WasControllerButtonPressed(ApplyForceButton))
+            //    ApplyForceAtAimedProc(false);
+            //else if (!CONTINUOUS_FORCE && XBoxController.WasControllerButtonPressed(ApplyInvertedForceButton))
+            //    ApplyForceAtAimedProc(true);
 
-            if (XBoxController.WasControllerButtonReleased(UnwindAllHookRopesButton) ||
-                    XBoxController.WasControllerButtonReleased(UnwindLastHookRopeButton))
-                SetAllHookRopesUnwindingProc(false);
-            else if (XBoxController.WasControllerButtonReleased(WindLastHookRopeButton) ||
-                    XBoxController.WasControllerButtonReleased(WindAllHookRopesButton))
-                SetAllHookRopesWindingProc(false);
+            //else if (XBoxController.WasControllerButtonPressed(UnwindLastHookRopeButton))
+            //    SetLastHookRopeUnwindingProc(true);
+            //else if (XBoxController.WasControllerButtonPressed(WindLastHookRopeButton))
+            //    SetLastHookRopeWindingProc(true);
+            //else if (XBoxController.WasControllerButtonPressed(UnwindAllHookRopesButton))
+            //    SetAllHookRopesUnwindingProc(true);
+            //else if (XBoxController.WasControllerButtonPressed(WindAllHookRopesButton))
+            //    SetAllHookRopesWindingProc(true);
+
+            //else if (XBoxController.WasControllerButtonPressed(ApplyForceObjectPairButton))
+            //    ApplyForceObjectPairProc();
+            //else if (XBoxController.WasControllerButtonPressed(ApplyForcePlayerButton))
+            //    ApplyForcePlayerProc();
+
+            //if (XBoxController.WasControllerButtonReleased(UnwindAllHookRopesButton) ||
+            //        XBoxController.WasControllerButtonReleased(UnwindLastHookRopeButton))
+            //    SetAllHookRopesUnwindingProc(false);
+            //else if (XBoxController.WasControllerButtonReleased(WindLastHookRopeButton) ||
+            //        XBoxController.WasControllerButtonReleased(WindAllHookRopesButton))
+            //    SetAllHookRopesWindingProc(false);
 
             XBoxController.UpdateStateEnd();
         }

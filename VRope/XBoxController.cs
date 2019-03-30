@@ -1,19 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using GTA;
-using GTA.Math;
-using GTA.Native;
-
+﻿
+using System;
 using SharpDX.XInput;
 
 namespace VRope
 {
+    public struct ControllerState
+    {
+        public Gamepad buttonData;
+        public int buttonPressedCount;
+
+        public ControllerState(Gamepad buttonData, int buttonPressedCount)
+        {
+            this.buttonData = buttonData;
+            this.buttonPressedCount = buttonPressedCount;
+        }
+    }
+
     static class XBoxController
     {
+        public static byte LEFT_TRIGGER_THRESHOLD = 255;
+        public static byte RIGHT_TRIGGER_THRESHOLD = 255;
+
         private static Controller xboxController = null;
         private static State oldControllerState;
         private static State newControllerState;
@@ -41,6 +48,30 @@ namespace VRope
             }
 
             return controllerFound;
+        }
+
+        public static int GetButtonPressedCount(Gamepad buttonData)
+        {
+            if (!IsControllerConnected())
+                return 0;
+
+            State currentState = xboxController.GetState();
+            GamepadButtonFlags[] buttonArray = (GamepadButtonFlags[])Enum.GetValues(typeof(GamepadButtonFlags));
+            int pressedCount = 0;
+
+            for(int i=1; i<buttonArray.Length; i++)
+            {
+                if (currentState.Gamepad.Buttons.HasFlag(buttonArray[i]))
+                    pressedCount++;
+            }
+
+            if (buttonData.LeftTrigger >= LEFT_TRIGGER_THRESHOLD)
+                pressedCount++;
+
+            if (buttonData.RightTrigger >= RIGHT_TRIGGER_THRESHOLD)
+                pressedCount++;
+
+            return pressedCount;
         }
 
         public static bool IsControllerConnected()
