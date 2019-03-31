@@ -64,18 +64,9 @@ namespace VRope
             return isPressed;
         }
 
-        public static bool IsKeyListUp(List<Keys> keys, Keys eventKeyUp)
+        public static bool IsKeyListUp(List<Keys> keys)
         {
-            if (keys == null || keys.Count == 0)
-                return false;
-
-            for (int i = 0; i < keys.Count; i++)
-            {
-                if (keys[i] == eventKeyUp && IsKeyUp(keys[i]))
-                    return true;
-            }
-
-            return false;
+            return !IsKeyListPressed(keys);
         }
     }
 }

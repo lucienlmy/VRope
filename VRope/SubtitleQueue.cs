@@ -35,6 +35,11 @@ namespace VRope
         }
 
 
+        public void AddSubtitle(String subtitle, int durationMs = 10)
+        {
+            AddSubtitle(Environment.TickCount, subtitle, durationMs);
+        }
+
         public void AddSubtitle(long index, String subtitle, int durationMs)
         {
             if (subtitle == null || subtitle.Length == 0 || durationMs < 1)
