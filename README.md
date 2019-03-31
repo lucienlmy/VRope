@@ -1,5 +1,4 @@
 # VRope
-gtav mod
 
 VRope v1.0.x.y alpha
 
