@@ -27,15 +27,16 @@ namespace VRope
         private static State oldControllerState;
         private static State newControllerState;
 
-        private static UserIndex[] Indexes = new UserIndex[] { UserIndex.One, UserIndex.Two, UserIndex.Three, UserIndex.Four };
+        private static UserIndex[] UserIndexes = new UserIndex[] { UserIndex.One, UserIndex.Two, UserIndex.Three, UserIndex.Four };
+        private static GamepadButtonFlags[] ButtonFlags = (GamepadButtonFlags[])Enum.GetValues(typeof(GamepadButtonFlags));
 
         public static bool CheckForController()
         {
             bool controllerFound = false;
 
-            for (int i = 0; i < Indexes.Length; i++)
+            for (int i = 0; i < UserIndexes.Length; i++)
             {
-                Controller Controller = new Controller(Indexes[i]);
+                Controller Controller = new Controller(UserIndexes[i]);
 
                 if (Controller.IsConnected)
                 {
@@ -54,12 +55,12 @@ namespace VRope
 
         public static int GetButtonPressedCount(Gamepad buttonData)
         {
-            GamepadButtonFlags[] buttonArray = (GamepadButtonFlags[])Enum.GetValues(typeof(GamepadButtonFlags));
             int pressedCount = 0;
 
-            for(int i=1; i<buttonArray.Length; i++)
+            //Skip i=0: GamepadButtonFlags.None
+            for(int i=1; i<ButtonFlags.Length; i++)
             {
-                if (buttonData.Buttons.HasFlag(buttonArray[i]))
+                if (buttonData.Buttons.HasFlag(ButtonFlags[i]))
                     pressedCount++;
             }
 
@@ -69,14 +70,18 @@ namespace VRope
             if (buttonData.RightTrigger >= RIGHT_TRIGGER_THRESHOLD)
                 pressedCount++;
 
-            if (buttonData.LeftThumbX > Gamepad.LeftThumbDeadZone)
+            if (buttonData.LeftThumbX > Gamepad.LeftThumbDeadZone ||
+                buttonData.LeftThumbX < -Gamepad.LeftThumbDeadZone)
                 pressedCount++;
-            if (buttonData.LeftThumbY > Gamepad.LeftThumbDeadZone)
+            if (buttonData.LeftThumbY > Gamepad.LeftThumbDeadZone ||
+                buttonData.LeftThumbY < -Gamepad.LeftThumbDeadZone)
                 pressedCount++;
 
-            if (buttonData.RightThumbX > Gamepad.RightThumbDeadZone)
+            if (buttonData.RightThumbX > Gamepad.RightThumbDeadZone ||
+                buttonData.RightThumbX < -Gamepad.RightThumbDeadZone)
                 pressedCount++;
-            if (buttonData.RightThumbY > Gamepad.RightThumbDeadZone)
+            if (buttonData.RightThumbY > Gamepad.RightThumbDeadZone ||
+                buttonData.RightThumbY < -Gamepad.RightThumbDeadZone)
                 pressedCount++;
 
             return pressedCount;
@@ -115,22 +120,21 @@ namespace VRope
 
             if (buttonData.LeftThumbX > Gamepad.LeftThumbDeadZone)
                 isPressed = isPressed && (stateData.LeftThumbX >= buttonData.LeftThumbX);
-            if (buttonData.LeftThumbY > Gamepad.LeftThumbDeadZone)
-                isPressed = isPressed && (stateData.LeftThumbY >= buttonData.LeftThumbY);
-
-            if (buttonData.RightThumbX > Gamepad.RightThumbDeadZone)
-                isPressed = isPressed && (stateData.RightThumbX >= buttonData.RightThumbX);
-            if (buttonData.RightThumbY > Gamepad.LeftThumbDeadZone)
-                isPressed = isPressed && (stateData.RightThumbY >= buttonData.RightThumbY);
-
-
             if (buttonData.LeftThumbX < -Gamepad.LeftThumbDeadZone)
                 isPressed = isPressed && (stateData.LeftThumbX <= buttonData.LeftThumbX);
+
+            if (buttonData.LeftThumbY > Gamepad.LeftThumbDeadZone)
+                isPressed = isPressed && (stateData.LeftThumbY >= buttonData.LeftThumbY);
             if (buttonData.LeftThumbY < -Gamepad.LeftThumbDeadZone)
                 isPressed = isPressed && (stateData.LeftThumbY <= buttonData.LeftThumbY);
 
+            if (buttonData.RightThumbX > Gamepad.RightThumbDeadZone)
+                isPressed = isPressed && (stateData.RightThumbX >= buttonData.RightThumbX);
             if (buttonData.RightThumbX < -Gamepad.RightThumbDeadZone)
                 isPressed = isPressed && (stateData.RightThumbX <= buttonData.RightThumbX);
+
+            if (buttonData.RightThumbY > Gamepad.LeftThumbDeadZone)
+                isPressed = isPressed && (stateData.RightThumbY >= buttonData.RightThumbY);
             if (buttonData.RightThumbY < -Gamepad.LeftThumbDeadZone)
                 isPressed = isPressed && (stateData.RightThumbY <= buttonData.RightThumbY);
 

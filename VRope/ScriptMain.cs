@@ -27,17 +27,19 @@ namespace VRope
         public const int VERSION_MINOR = 0;
         public const int VERSION_BUILD = 10;
         public const String VERSION_SUFFIX = "a DevBuild";
-        
+
+        private const int UPDATE_INTERVAL = 13;
+        private const float UPDATE_FPS = (1000f / UPDATE_INTERVAL);
+
         private bool ENABLE_XBOX_CONTROLLER_INPUT;
         private bool FREE_RANGE_MODE;
         private String CONFIG_FILE_NAME;
-        private int UPDATE_INTERVAL;
         private float MIN_ROPE_LENGTH; 
         private float MAX_HOOK_CREATION_DISTANCE; 
         private float MAX_HOOKED_ENTITY_DISTANCE;
 
         private bool CONTINUOUS_FORCE;
-        private int FORCE_INCREMENT_VALUE;
+        private float FORCE_INCREMENT_VALUE;
         private float FORCE_SCALE_FACTOR = 1.4f;
 
         private const int INIT_HOOK_LIST_CAPACITY = 500;
@@ -67,7 +69,7 @@ namespace VRope
         private RopeType EntityToEntityHookRopeType;
         private RopeType PlayerToEntityHookRopeType;
 
-        private int ForceMagnitude;
+        private float ForceMagnitude;
 
         public ScriptMain()
         {
@@ -369,11 +371,11 @@ namespace VRope
                 ModActive = settings.GetValue<bool>("GLOBAL_VARS", "ENABLE_ON_GAME_LOAD", false);
                 ENABLE_XBOX_CONTROLLER_INPUT = settings.GetValue<bool>("GLOBAL_VARS", "ENABLE_XBOX_CONTROLLER_INPUT", true);
                 FREE_RANGE_MODE = settings.GetValue<bool>("GLOBAL_VARS", "FREE_RANGE_MODE", true);
-
-                UPDATE_INTERVAL = settings.GetValue<int>("GLOBAL_VARS", "UPDATE_INTERVAL", 16);
-                MIN_ROPE_LENGTH = settings.GetValue<float>("GLOBAL_VARS", "MIN_ROPE_LENGTH", 1.0f);
-                MAX_HOOK_CREATION_DISTANCE = settings.GetValue<float>("GLOBAL_VARS", "MAX_HOOK_CREATION_DISTANCE", 70);
-                MAX_HOOKED_ENTITY_DISTANCE = settings.GetValue<float>("GLOBAL_VARS", "MAX_HOOKED_ENTITY_DISTANCE", 145);
+                
+                //UPDATE_INTERVAL = settings.GetValue<int>("GLOBAL_VARS", "UPDATE_INTERVAL", 13);
+                MIN_ROPE_LENGTH = (float)settings.GetValue<double>("GLOBAL_VARS", "MIN_ROPE_LENGTH", 1.0);
+                MAX_HOOK_CREATION_DISTANCE = (float)settings.GetValue<double>("GLOBAL_VARS", "MAX_HOOK_CREATION_DISTANCE", 70.0);
+                MAX_HOOKED_ENTITY_DISTANCE = (float)settings.GetValue<double>("GLOBAL_VARS", "MAX_HOOKED_ENTITY_DISTANCE", 145.0);
 
                 XBoxController.LEFT_TRIGGER_THRESHOLD = settings.GetValue<byte>("CONTROL_XBOX_CONTROLLER", "LEFT_TRIGGER_THRESHOLD", 255);
                 XBoxController.RIGHT_TRIGGER_THRESHOLD = settings.GetValue<byte>("CONTROL_XBOX_CONTROLLER", "RIGHT_TRIGGER_THRESHOLD", 255);
@@ -382,7 +384,7 @@ namespace VRope
                 PlayerToEntityHookRopeType = settings.GetValue<RopeType>("HOOK_ROPE_TYPES", "PlayerToEntityHookRopeType", (RopeType)3);
 
                 ForceMagnitude = settings.GetValue<int>("FORCE_GUN_VARS", "DEFAULT_FORCE_VALUE", 20);
-                FORCE_INCREMENT_VALUE = settings.GetValue<int>("FORCE_GUN_VARS", "FORCE_INCREMENT_VALUE", 2);
+                FORCE_INCREMENT_VALUE = settings.GetValue<int>("FORCE_GUN_VARS", "FORCE_INCREMENT_VALUE", 1);
                 CONTINUOUS_FORCE = settings.GetValue<bool>("FORCE_GUN_VARS", "CONTINUOUS_FORCE", false);
 
                 InitControlKeysFromConfig(settings);
@@ -529,7 +531,6 @@ namespace VRope
                 }
             }
         }
-
 
 
         public bool IsEntityHooked(Entity entity)
@@ -769,7 +770,7 @@ namespace VRope
             else
                 ForceMagnitude -= FORCE_INCREMENT_VALUE;
 
-            subQueue.AddSubtitle(14, "VRope Force: " + ForceMagnitude, 12);
+            subQueue.AddSubtitle(14, "VRope Force: " + ForceMagnitude.ToString("0.00"), 13);
         }
 
         private void ApplyForceAtAimedProc(bool invertForce = false)
