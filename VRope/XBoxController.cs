@@ -20,6 +20,8 @@ namespace VRope
     {
         public static byte LEFT_TRIGGER_THRESHOLD = 255;
         public static byte RIGHT_TRIGGER_THRESHOLD = 255;
+        public static short LEFT_STICK_THRESHOLD = 32767;
+        public static short RIGHT_STICK_THRESHOLD = 32767;
 
         private static Controller xboxController = null;
         private static State oldControllerState;
@@ -52,16 +54,12 @@ namespace VRope
 
         public static int GetButtonPressedCount(Gamepad buttonData)
         {
-            if (!IsControllerConnected())
-                return 0;
-
-            State currentState = xboxController.GetState();
             GamepadButtonFlags[] buttonArray = (GamepadButtonFlags[])Enum.GetValues(typeof(GamepadButtonFlags));
             int pressedCount = 0;
 
             for(int i=1; i<buttonArray.Length; i++)
             {
-                if (currentState.Gamepad.Buttons.HasFlag(buttonArray[i]))
+                if (buttonData.Buttons.HasFlag(buttonArray[i]))
                     pressedCount++;
             }
 
@@ -69,6 +67,16 @@ namespace VRope
                 pressedCount++;
 
             if (buttonData.RightTrigger >= RIGHT_TRIGGER_THRESHOLD)
+                pressedCount++;
+
+            if (buttonData.LeftThumbX > Gamepad.LeftThumbDeadZone)
+                pressedCount++;
+            if (buttonData.LeftThumbY > Gamepad.LeftThumbDeadZone)
+                pressedCount++;
+
+            if (buttonData.RightThumbX > Gamepad.RightThumbDeadZone)
+                pressedCount++;
+            if (buttonData.RightThumbY > Gamepad.RightThumbDeadZone)
                 pressedCount++;
 
             return pressedCount;
@@ -79,57 +87,80 @@ namespace VRope
             return (xboxController != null && xboxController.IsConnected);
         }
 
-        public static bool WasControllerButtonPressed(Gamepad buttonData)
+        public static bool WasControllerButtonPressed(ControllerState button)
         {
-            return (IsControllerButtonPressed(buttonData, newControllerState) &&
-                    !IsControllerButtonPressed(buttonData, oldControllerState));
+            return (IsControllerButtonPressed(button, newControllerState) &&
+                    !IsControllerButtonPressed(button, oldControllerState));
         }
 
-        public static bool WasControllerButtonReleased(Gamepad buttonData)
+        public static bool WasControllerButtonReleased(ControllerState button)
         {
-            return (IsControllerButtonPressed(buttonData, oldControllerState) &&
-                    !IsControllerButtonPressed(buttonData, newControllerState));
+            return (IsControllerButtonPressed(button, oldControllerState) &&
+                    !IsControllerButtonPressed(button, newControllerState));
         }
 
-        public static bool IsControllerButtonPressed(Gamepad buttonData, State state)
+        public static bool IsControllerButtonPressed(ControllerState button, State state)
         {
             Gamepad stateData = state.Gamepad;
+            Gamepad buttonData = button.buttonData;
 
-            bool isPressed = stateData.Buttons.HasFlag(buttonData.Buttons);
+            bool isPressed = (button.buttonPressedCount > 0 && 
+                (buttonData.Buttons == GamepadButtonFlags.None || stateData.Buttons.HasFlag(buttonData.Buttons)));
 
-            if (buttonData.LeftTrigger > 0)
+            if (buttonData.LeftTrigger > Gamepad.TriggerThreshold)
                 isPressed = isPressed && (stateData.LeftTrigger >= buttonData.LeftTrigger);
-
-            if (buttonData.RightTrigger > 0)
+            if (buttonData.RightTrigger > Gamepad.TriggerThreshold)
                 isPressed = isPressed && (stateData.RightTrigger >= buttonData.RightTrigger);
 
+
+            if (buttonData.LeftThumbX > Gamepad.LeftThumbDeadZone)
+                isPressed = isPressed && (stateData.LeftThumbX >= buttonData.LeftThumbX);
+            if (buttonData.LeftThumbY > Gamepad.LeftThumbDeadZone)
+                isPressed = isPressed && (stateData.LeftThumbY >= buttonData.LeftThumbY);
+
+            if (buttonData.RightThumbX > Gamepad.RightThumbDeadZone)
+                isPressed = isPressed && (stateData.RightThumbX >= buttonData.RightThumbX);
+            if (buttonData.RightThumbY > Gamepad.LeftThumbDeadZone)
+                isPressed = isPressed && (stateData.RightThumbY >= buttonData.RightThumbY);
+
+
+            if (buttonData.LeftThumbX < -Gamepad.LeftThumbDeadZone)
+                isPressed = isPressed && (stateData.LeftThumbX <= buttonData.LeftThumbX);
+            if (buttonData.LeftThumbY < -Gamepad.LeftThumbDeadZone)
+                isPressed = isPressed && (stateData.LeftThumbY <= buttonData.LeftThumbY);
+
+            if (buttonData.RightThumbX < -Gamepad.RightThumbDeadZone)
+                isPressed = isPressed && (stateData.RightThumbX <= buttonData.RightThumbX);
+            if (buttonData.RightThumbY < -Gamepad.LeftThumbDeadZone)
+                isPressed = isPressed && (stateData.RightThumbY <= buttonData.RightThumbY);
+
             return isPressed;
         }
 
-        public static bool IsControllerButtonReleased(Gamepad buttonData, State state)
+        public static bool IsControllerButtonPressed(ControllerState button)
         {
-            Gamepad stateData = state.Gamepad;
-
-            bool isPressed = !stateData.Buttons.HasFlag(buttonData.Buttons);
-
-            if (buttonData.LeftTrigger > 0)
-                isPressed = isPressed && (stateData.LeftTrigger < buttonData.LeftTrigger);
-
-            if (buttonData.RightTrigger > 0)
-                isPressed = isPressed && (stateData.RightTrigger < buttonData.RightTrigger);
-
-            return isPressed;
+            return IsControllerButtonPressed(button, newControllerState);
         }
 
-        public static bool IsControllerButtonPressed(Gamepad buttonData)
-        {
-            return IsControllerButtonPressed(buttonData, newControllerState);
-        }
+        //public static bool IsControllerButtonReleased(ControllerState buttonData, State state)
+        //{
+        //    Gamepad stateData = state.Gamepad;
 
-        public static bool IsControllerButtonReleased(Gamepad buttonData)
-        {
-            return IsControllerButtonReleased(buttonData, newControllerState);
-        }
+        //    bool isPressed = !stateData.Buttons.HasFlag(buttonData.Buttons);
+
+        //    if (buttonData.LeftTrigger > 0)
+        //        isPressed = isPressed && (stateData.LeftTrigger < buttonData.LeftTrigger);
+
+        //    if (buttonData.RightTrigger > 0)
+        //        isPressed = isPressed && (stateData.RightTrigger < buttonData.RightTrigger);
+
+        //    return isPressed;
+        //}
+
+        //public static bool IsControllerButtonReleased(ControllerState buttonData)
+        //{
+        //    return IsControllerButtonReleased(buttonData, newControllerState);
+        //}
 
         public static void UpdateStateBegin()
         {

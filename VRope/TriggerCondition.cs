@@ -1,15 +1,18 @@
 ﻿
+using System;
+
 namespace VRope
 {
+    [Flags]
     public enum TriggerCondition
     {
         NONE = 0, //Disabled Control
 
-        PRESSED,
-        HELD,
-        RELEASED,
+        PRESSED = 1,
+        HELD = 2,
+        RELEASED = 4,
 
-        ANY,
-        CUSTOM
+        CUSTOM = 8,
+        ANY = (PRESSED | HELD | RELEASED)
     }
 }

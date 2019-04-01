@@ -121,26 +121,61 @@ namespace VRope
             buttonData = buttonData.Replace(" ", "");
 
             Gamepad resultData = new Gamepad();
-            resultData.LeftTrigger = 0;
-            resultData.RightTrigger = 0;
 
             String[] buttonStrings = buttonData.Split(SEPARATOR_CHAR);
 
             for (int i=0; i<buttonStrings.Length; i++)
             {
-                if (buttonStrings[i] != "LeftTrigger" && buttonStrings[i] != "RightTrigger")
-                {
-                    GamepadButtonFlags buttonFlag = (GamepadButtonFlags)Enum.Parse(typeof(GamepadButtonFlags), buttonStrings[i]);
+                String buttonString = buttonStrings[i];
 
-                    resultData.Buttons |= buttonFlag; 
-                }
-                else if(buttonStrings[i] == "LeftTrigger")
+                if (buttonString == "LeftTrigger")
                 {
                     resultData.LeftTrigger = XBoxController.LEFT_TRIGGER_THRESHOLD;
                 }
-                else if(buttonStrings[i] == "RightTrigger")
+                else if(buttonString == "RightTrigger")
                 {
                     resultData.RightTrigger = XBoxController.RIGHT_TRIGGER_THRESHOLD;
+                }
+
+                else if (buttonString == "LeftStickUp")
+                {
+                    resultData.LeftThumbY = XBoxController.LEFT_STICK_THRESHOLD;
+                }
+                else if (buttonString == "LeftStickDown")
+                {
+                    resultData.LeftThumbY = (short)-XBoxController.LEFT_STICK_THRESHOLD;
+                }
+                else if (buttonString == "LeftStickLeft")
+                {
+                    resultData.LeftThumbX = (short)-XBoxController.LEFT_STICK_THRESHOLD;
+                }
+                else if (buttonString == "LeftStickRight")
+                {
+                    resultData.LeftThumbX = XBoxController.LEFT_STICK_THRESHOLD;
+                }
+
+                else if (buttonString == "RightStickUp")
+                {
+                    resultData.RightThumbY = XBoxController.RIGHT_STICK_THRESHOLD;
+                }
+                else if (buttonString == "RightStickDown")
+                {
+                    resultData.RightThumbY = (short)-XBoxController.RIGHT_STICK_THRESHOLD;
+                }
+                else if (buttonString == "RightStickLeft")
+                {
+                    resultData.RightThumbX = (short)-XBoxController.RIGHT_STICK_THRESHOLD;
+                }
+                else if (buttonString == "RightStickRight")
+                {
+                    resultData.RightThumbX = XBoxController.RIGHT_STICK_THRESHOLD;
+                }
+
+                else
+                {
+                    GamepadButtonFlags buttonFlag = (GamepadButtonFlags)Enum.Parse(typeof(GamepadButtonFlags), buttonStrings[i]);
+
+                    resultData.Buttons |= buttonFlag;
                 }
             }
 
@@ -304,6 +339,19 @@ namespace VRope
             controlButtons.Add(new ControlButton("ApplyForcePlayerButton",
                 TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "ApplyForcePlayerButton", "None")),
                 (Action)ApplyForcePlayerProc, TriggerCondition.NONE)); //(CONTINUOUS_FORCE ? TriggerCondition.HELD : TriggerCondition.PRESSED) ));
+
+            controlButtons.Add(new ControlButton("WindLastHookRopeButton",
+                TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "WindLastHookRopeButton", "None")),
+                (Action)delegate { SetLastHookRopeWindingProc(false); }, TriggerCondition.RELEASED));
+            controlButtons.Add(new ControlButton("WindAllHookRopesButton",
+                TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "WindAllHookRopesButton", "None")),
+                (Action)delegate { SetAllHookRopesWindingProc(false); }, TriggerCondition.RELEASED));
+            controlButtons.Add(new ControlButton("UnwindLastHookRopeButton",
+                TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "UnwindLastHookRopeButton", "None")),
+                (Action)delegate { SetLastHookRopeUnwindingProc(false); }, TriggerCondition.RELEASED));
+            controlButtons.Add(new ControlButton("UnwindAllHookRopesButton",
+                TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "UnwindAllHookRopesButton", "None")),
+                (Action)delegate { SetAllHookRopesUnwindingProc(false); }, TriggerCondition.RELEASED));
         }
 
 
@@ -387,6 +435,102 @@ namespace VRope
             }
         }
 
+        private void ProcessPedsInHook(int hookIndex)
+        {
+            Entity entity1 = hooks[hookIndex].entity1;
+            Entity entity2 = hooks[hookIndex].entity2;
+            bool ropeWinding = hooks[hookIndex].isWinding;
+            bool ropeUnwinding = hooks[hookIndex].isUnwinding;
+
+            if (Util.IsPed(entity1) && !Util.IsPlayer(entity1))
+            {
+                Ped ped1 = (Ped)entity1;
+
+                if (ped1.IsAlive)
+                {
+                    if (!ped1.IsRagdoll)
+                    {
+                        if (!ped1.IsInAir && !ped1.IsInWater)
+                        {
+                            if (ped1.Velocity.Length() > MAX_HOOKED_PED_SPEED)
+                            {
+                                Util.MakePedRagdoll(ped1, PED_RAGDOLL_DURATION);
+
+                                if (ropeWinding)
+                                    SetHookRopeWindingByIndex(hookIndex, false);
+                                else if (ropeUnwinding)
+                                    SetHookRopeUnwindingByIndex(hookIndex, false);
+
+                                RecreateEntityHook(hookIndex);
+
+                                if (ropeWinding)
+                                    SetHookRopeWindingByIndex(hookIndex, true);
+                                else if (ropeUnwinding)
+                                    SetHookRopeUnwindingByIndex(hookIndex, true);
+                            }
+                        }
+                        else
+                        {
+                            Util.MakePedRagdoll(ped1, PED_RAGDOLL_DURATION);
+
+                            if (ropeWinding)
+                                SetHookRopeWindingByIndex(hookIndex, false);
+                            else if (ropeUnwinding)
+                                SetHookRopeUnwindingByIndex(hookIndex, false);
+
+                            RecreateEntityHook(hookIndex);
+
+                            if (ropeWinding)
+                                SetHookRopeWindingByIndex(hookIndex, true);
+                            else if (ropeUnwinding)
+                                SetHookRopeUnwindingByIndex(hookIndex, true);
+                        }
+                    }
+                }
+                else
+                {
+                    if (ped1.Velocity.Length() < 0.1f && (!ped1.IsInAir && !ped1.IsInWater))
+                    {
+                        DeleteHookByIndex(hookIndex);
+                        return;
+                    }
+                }
+            }
+
+            if (Util.IsPlayer(entity2))
+            {
+                Ped ped2 = (Ped)entity2;
+
+                if (ped2.IsAlive)
+                {
+                    if (!ped2.IsRagdoll)
+                    {
+                        if (!ped2.IsInAir && !ped2.IsInWater)
+                        {
+                            if (ped2.Velocity.Length() > MAX_HOOKED_PED_SPEED)
+                            {
+                                Util.MakePedRagdoll(ped2, PED_RAGDOLL_DURATION);
+                                RecreateEntityHook(hookIndex);
+                            }
+                        }
+                        else
+                        {
+                            Util.MakePedRagdoll(ped2, PED_RAGDOLL_DURATION);
+                            RecreateEntityHook(hookIndex);
+                        }
+                    }
+                }
+                else
+                {
+                    if (ped2.Velocity.Length() < 0.1f && (!ped2.IsInAir && !ped2.IsInWater))
+                    {
+                        DeleteHookByIndex(hookIndex);
+                    }
+                }
+            }
+        }
+
+
 
         public bool IsEntityHooked(Entity entity)
         {
@@ -401,83 +545,6 @@ namespace VRope
             }
 
             return false;
-        }
-
-        private void ProcessPedsInHook(int hookIndex)
-        {
-            Entity entity1 = hooks[hookIndex].entity1;
-            Entity entity2 = hooks[hookIndex].entity2;
-            bool ropeWinding = hooks[hookIndex].isWinding;
-            bool ropeUnwinding = hooks[hookIndex].isUnwinding;
-
-            if (!ropeWinding && !ropeUnwinding)
-            {
-                if (Util.IsPed(entity1) && !Util.IsPlayer(entity1))
-                {
-                    Ped ped1 = (Ped)entity1;
-
-                    if (ped1.IsAlive)
-                    {
-                        if (!ped1.IsRagdoll)
-                        {
-                            if (!ped1.IsInAir && !ped1.IsInWater)
-                            {
-                                if (ped1.Velocity.Length() > MAX_HOOKED_PED_SPEED)
-                                {
-                                    Util.MakePedRagdoll(ped1, PED_RAGDOLL_DURATION);
-                                    RecreateEntityHook(hookIndex);
-                                }
-                            }
-                            else
-                            {
-                                Util.MakePedRagdoll(ped1, PED_RAGDOLL_DURATION);
-                                RecreateEntityHook(hookIndex); 
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (ped1.Velocity.Length() < 0.1f && (!ped1.IsInAir && !ped1.IsInWater))
-                        {
-                            DeleteHookByIndex(hookIndex);
-                            return;
-                        }
-                    }
-                }
-
-                if (Util.IsPlayer(entity2))
-                {
-                    Ped ped2 = (Ped)entity2;
-
-                    if (ped2.IsAlive)
-                    {
-                        if (!ped2.IsRagdoll)
-                        {
-                            if (!ped2.IsInAir && !ped2.IsInWater)
-                            {
-                                if (ped2.Velocity.Length() > MAX_HOOKED_PED_SPEED)
-                                {
-                                    Util.MakePedRagdoll(ped2, PED_RAGDOLL_DURATION);
-                                    RecreateEntityHook(hookIndex);
-                                }
-                            }
-                            else
-                            {
-                                Util.MakePedRagdoll(ped2, PED_RAGDOLL_DURATION);
-                                RecreateEntityHook(hookIndex);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (ped2.Velocity.Length() < 0.1f && (!ped2.IsInAir && !ped2.IsInWater))
-                        {
-                            DeleteHookByIndex(hookIndex);
-                        }
-                    }
-                }
-
-            }
         }
 
         private void UpdateDebugStuff()
@@ -558,9 +625,11 @@ namespace VRope
                             ropeHook.isEntity2AMapPosition = true;
                         }
 
-                        if (FREE_RANGE_MODE || 
+                        if (FREE_RANGE_MODE ||
                             ropeHook.entity1.Position.DistanceTo(ropeHook.hookPoint2) < MAX_HOOK_CREATION_DISTANCE)
+                        {
                             CreateHook(ropeHook);
+                        }
 
                         ropeHook.entity1 = null;
                         ropeHook.entity2 = null;
@@ -700,7 +769,7 @@ namespace VRope
             else
                 ForceMagnitude -= FORCE_INCREMENT_VALUE;
 
-            subQueue.AddSubtitle(14, "VRope Force: " + ForceMagnitude, 10);
+            subQueue.AddSubtitle(14, "VRope Force: " + ForceMagnitude, 12);
         }
 
         private void ApplyForceAtAimedProc(bool invertForce = false)
@@ -772,15 +841,10 @@ namespace VRope
 
                         if (forceHook.entity1 != null && forceHook.entity2 != null)
                         {
-                            //if (FREE_RANGE_MODE || forceHook.entity1.Position.DistanceTo(forceHook.entity2.Position) < MAX_HOOK_CREATION_DISTANCE)
-                            {
-                                float scaleFactor = FORCE_SCALE_FACTOR;
+                            Vector3 entity2HookPosition = forceHook.entity2.Position + forceHook.hookOffset2;
+                            Vector3 entity1HookPosition = forceHook.entity1.Position + forceHook.hookOffset1;
 
-                                Vector3 entity2HookPosition = forceHook.entity2.Position + forceHook.hookOffset2;
-                                Vector3 entity1HookPosition = forceHook.entity1.Position + forceHook.hookOffset1;
-
-                                ApplyForce(entity1HookPosition, entity2HookPosition);
-                            }
+                            ApplyForce(entity1HookPosition, entity2HookPosition);
 
                             forceHook.entity1 = null;
                             forceHook.entity2 = null;
@@ -789,14 +853,13 @@ namespace VRope
                     else if(rayResult.DitHitAnything)
                     {
                         if ((forceHook.entity1 != null && forceHook.entity2 == null) &&
-                       (FREE_RANGE_MODE || forceHook.entity1.Position.DistanceTo(rayResult.HitCoords) < MAX_HOOK_CREATION_DISTANCE))
+                            (FREE_RANGE_MODE || forceHook.entity1.Position.DistanceTo(rayResult.HitCoords) < MAX_HOOK_CREATION_DISTANCE))
                         {
                             forceHook.hookPoint2 = rayResult.HitCoords;
                             forceHook.hookOffset2 = Vector3.Zero;
                             forceHook.isEntity2AMapPosition = true;
 
                             Vector3 entity1HookPosition = forceHook.entity1.Position + forceHook.hookOffset1;
-                            Vector3 distanceVector = forceHook.hookPoint2 - entity1HookPosition;
 
                             ApplyForce(entity1HookPosition, forceHook.hookPoint2);
                         }
@@ -899,12 +962,12 @@ namespace VRope
             for(int i=0; i<controlButtons.Count; i++)
             {
                 var buttonTuple = controlButtons[i];
-                Gamepad buttonData = buttonTuple.state.buttonData;
+                ControllerState button = buttonTuple.state;
                 TriggerCondition condition = buttonTuple.condition;
 
-                if( (condition == TriggerCondition.PRESSED && XBoxController.WasControllerButtonPressed(buttonData)) ||
-                    (condition == TriggerCondition.RELEASED && XBoxController.WasControllerButtonReleased(buttonData)) ||
-                    (condition == TriggerCondition.HELD && XBoxController.IsControllerButtonPressed(buttonData)) ||
+                if( (condition == TriggerCondition.PRESSED && XBoxController.WasControllerButtonPressed(button)) ||
+                    (condition == TriggerCondition.RELEASED && XBoxController.WasControllerButtonReleased(button)) ||
+                    (condition == TriggerCondition.HELD && XBoxController.IsControllerButtonPressed(button)) ||
                     (condition == TriggerCondition.ANY))
                 {
                     buttonTuple.callback.Invoke();
@@ -990,7 +1053,7 @@ namespace VRope
             }
             catch (Exception exc)
             {
-                UI.Notify("VRope Runtime Error:\n" + exc.Message + "\nMod execution halted.");
+                UI.Notify("VRope Runtime Error:\n" + exc.ToString() + "\nMod execution halted.");
                 DeleteAllHooks();
                 ModRunning = false;
                 ModActive = false;
@@ -1014,13 +1077,13 @@ namespace VRope
                     }
                     else
                     {
-                        if (controlKeys[i].condition == TriggerCondition.PRESSED && Keyboard.IsKeyListPressed(controlKeys[i].keys))
+                        if (controlKeys[i].condition.HasFlag(TriggerCondition.PRESSED) && Keyboard.IsKeyListPressed(controlKeys[i].keys))
                         {
                             controlKeys[i].callback.Invoke();
                             controlKeys[i].wasPressed = true;
                             break;
                         }
-                        else if(controlKeys[i].condition == TriggerCondition.HELD && Keyboard.IsKeyListPressed(controlKeys[i].keys))
+                        else if(controlKeys[i].condition.HasFlag(TriggerCondition.HELD) && Keyboard.IsKeyListPressed(controlKeys[i].keys))
                         {
                             break;
                         }
@@ -1045,21 +1108,24 @@ namespace VRope
 
                 foreach(var control in controlKeys)
                 {
-                    if(control.wasPressed && Keyboard.IsKeyListUp(control.keys))
+                    if (control.wasPressed)
                     {
-                        if (control.name == "WindLastHookRopeKey") SetLastHookRopeWindingProc(false);
-                        else if (control.name == "WindAllHookRopesKey") SetAllHookRopesWindingProc(false);
-                        else if (control.name == "UnwindLastHookRopeKey") SetLastHookRopeUnwindingProc(false);
-                        else if (control.name == "UnwindAllHookRopesKey") SetAllHookRopesUnwindingProc(false);
+                        if (Keyboard.IsKeyListUp(control.keys))
+                        {
+                            if (control.name == "WindLastHookRopeKey") SetLastHookRopeWindingProc(false);
+                            else if (control.name == "WindAllHookRopesKey") SetAllHookRopesWindingProc(false);
+                            else if (control.name == "UnwindLastHookRopeKey") SetLastHookRopeUnwindingProc(false);
+                            else if (control.name == "UnwindAllHookRopesKey") SetAllHookRopesUnwindingProc(false);
 
-                        control.wasPressed = false;
-                        break;
+                            control.wasPressed = false;
+                            break;
+                        } 
                     }
                 }
             }
             catch (Exception exc)
             {
-                UI.Notify("VRope OnKeyUp Error:\n" + exc.Message, false);
+                UI.Notify("VRope OnKeyUp Error:\n" + exc.ToString(), false);
             }
         }
 
