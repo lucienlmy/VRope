@@ -133,9 +133,9 @@ namespace VRope
             if (buttonData.RightThumbX < -Gamepad.RightThumbDeadZone)
                 isPressed = isPressed && (stateData.RightThumbX <= buttonData.RightThumbX);
 
-            if (buttonData.RightThumbY > Gamepad.LeftThumbDeadZone)
+            if (buttonData.RightThumbY > Gamepad.RightThumbDeadZone)
                 isPressed = isPressed && (stateData.RightThumbY >= buttonData.RightThumbY);
-            if (buttonData.RightThumbY < -Gamepad.LeftThumbDeadZone)
+            if (buttonData.RightThumbY < -Gamepad.RightThumbDeadZone)
                 isPressed = isPressed && (stateData.RightThumbY <= buttonData.RightThumbY);
 
             return isPressed;

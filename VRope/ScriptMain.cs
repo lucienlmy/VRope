@@ -26,7 +26,7 @@ namespace VRope
         public const String MOD_DEVELOPER = "jeffsturm4nn"; // :D
         public const int VERSION_MINOR = 0;
         public const int VERSION_BUILD = 10;
-        public const String VERSION_SUFFIX = "a DevBuild";
+        public const String VERSION_SUFFIX = "a";
 
         private const int UPDATE_INTERVAL = 13;
         private const float UPDATE_FPS = (1000f / UPDATE_INTERVAL);
@@ -43,7 +43,7 @@ namespace VRope
         private float FORCE_SCALE_FACTOR = 1.4f;
 
         private const int INIT_HOOK_LIST_CAPACITY = 500;
-        private const float  MAX_HOOKED_PED_SPEED = 0.57f;
+        private const float  MAX_HOOKED_PED_SPEED = 1.05f;
         private const int PED_RAGDOLL_DURATION = 7000;
         private const char SEPARATOR_CHAR = '+';
 
@@ -330,10 +330,10 @@ namespace VRope
 
             controlButtons.Add(new ControlButton("IncreaseForceButton",
                 TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "IncreaseForceButton", "None")),
-                (Action)delegate { IncrementForceValueProc(false); }, TriggerCondition.HELD));
+                (Action)delegate { IncrementForceValueProc(false, true); }, TriggerCondition.HELD));
             controlButtons.Add(new ControlButton("DecreaseForceButton",
                 TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "DecreaseForceButton", "None")),
-                (Action)delegate { IncrementForceValueProc(true); }, TriggerCondition.HELD));
+                (Action)delegate { IncrementForceValueProc(true, true); }, TriggerCondition.HELD));
             controlButtons.Add(new ControlButton("ApplyForceObjectPairButton",
                 TranslateButtonStringToButtonData(settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "ApplyForceObjectPairButton", "None")),
                 (Action)ApplyForceObjectPairProc, TriggerCondition.PRESSED));
@@ -368,14 +368,14 @@ namespace VRope
                     UI.Notify("VRope File Error:\n" + CONFIG_FILE_NAME + " could not be found.\nAll settings were set to default.", true);
                 }
 
-                ModActive = settings.GetValue<bool>("GLOBAL_VARS", "ENABLE_ON_GAME_LOAD", false);
+                ModActive = settings.GetValue("GLOBAL_VARS", "ENABLE_ON_GAME_LOAD", false);
                 ENABLE_XBOX_CONTROLLER_INPUT = settings.GetValue<bool>("GLOBAL_VARS", "ENABLE_XBOX_CONTROLLER_INPUT", true);
-                FREE_RANGE_MODE = settings.GetValue<bool>("GLOBAL_VARS", "FREE_RANGE_MODE", true);
+                FREE_RANGE_MODE = settings.GetValue("GLOBAL_VARS", "FREE_RANGE_MODE", true);
                 
                 //UPDATE_INTERVAL = settings.GetValue<int>("GLOBAL_VARS", "UPDATE_INTERVAL", 13);
-                MIN_ROPE_LENGTH = (float)settings.GetValue<double>("GLOBAL_VARS", "MIN_ROPE_LENGTH", 1.0);
-                MAX_HOOK_CREATION_DISTANCE = (float)settings.GetValue<double>("GLOBAL_VARS", "MAX_HOOK_CREATION_DISTANCE", 70.0);
-                MAX_HOOKED_ENTITY_DISTANCE = (float)settings.GetValue<double>("GLOBAL_VARS", "MAX_HOOKED_ENTITY_DISTANCE", 145.0);
+                MIN_ROPE_LENGTH = settings.GetValue("GLOBAL_VARS", "MIN_ROPE_LENGTH", 1.0f);
+                MAX_HOOK_CREATION_DISTANCE = settings.GetValue("GLOBAL_VARS", "MAX_HOOK_CREATION_DISTANCE", 70.0f);
+                MAX_HOOKED_ENTITY_DISTANCE = settings.GetValue("GLOBAL_VARS", "MAX_HOOKED_ENTITY_DISTANCE", 145.0f);
 
                 XBoxController.LEFT_TRIGGER_THRESHOLD = settings.GetValue<byte>("CONTROL_XBOX_CONTROLLER", "LEFT_TRIGGER_THRESHOLD", 255);
                 XBoxController.RIGHT_TRIGGER_THRESHOLD = settings.GetValue<byte>("CONTROL_XBOX_CONTROLLER", "RIGHT_TRIGGER_THRESHOLD", 255);
@@ -383,9 +383,9 @@ namespace VRope
                 EntityToEntityHookRopeType = settings.GetValue<RopeType>("HOOK_ROPE_TYPES", "EntityToEntityHookRopeType", (RopeType)4);
                 PlayerToEntityHookRopeType = settings.GetValue<RopeType>("HOOK_ROPE_TYPES", "PlayerToEntityHookRopeType", (RopeType)3);
 
-                ForceMagnitude = settings.GetValue<int>("FORCE_GUN_VARS", "DEFAULT_FORCE_VALUE", 20);
-                FORCE_INCREMENT_VALUE = settings.GetValue<int>("FORCE_GUN_VARS", "FORCE_INCREMENT_VALUE", 1);
-                CONTINUOUS_FORCE = settings.GetValue<bool>("FORCE_GUN_VARS", "CONTINUOUS_FORCE", false);
+                ForceMagnitude = settings.GetValue("FORCE_MECHANICS_VARS", "DEFAULT_FORCE_VALUE", 70.0f);
+                FORCE_INCREMENT_VALUE = settings.GetValue("FORCE_MECHANICS_VARS", "FORCE_INCREMENT_VALUE", 1.0f);
+                CONTINUOUS_FORCE = settings.GetValue("FORCE_MECHANICS_VARS", "CONTINUOUS_FORCE", false);
 
                 InitControlKeysFromConfig(settings);
 
@@ -432,104 +432,81 @@ namespace VRope
                         } 
                     }
 
-                    ProcessPedsInHook(i);
+                    if (hooks[i].HasPed())
+                        ProcessPedsInHook(i);
                 }
             }
         }
 
         private void ProcessPedsInHook(int hookIndex)
         {
-            Entity entity1 = hooks[hookIndex].entity1;
-            Entity entity2 = hooks[hookIndex].entity2;
+            Entity entity = (Util.IsPed(hooks[hookIndex].entity1) ? hooks[hookIndex].entity1 : hooks[hookIndex].entity2);
+
+            if (Util.IsPlayer(entity) && Util.IsPed(hooks[hookIndex].entity2))
+            {
+                entity = hooks[hookIndex].entity2;
+            }
+
             bool ropeWinding = hooks[hookIndex].isWinding;
             bool ropeUnwinding = hooks[hookIndex].isUnwinding;
 
-            if (Util.IsPed(entity1) && !Util.IsPlayer(entity1))
+            Ped ped = (Ped)entity;
+
+            if (!Util.IsPlayer(ped))
             {
-                Ped ped1 = (Ped)entity1;
-
-                if (ped1.IsAlive)
+                if (ped.IsAlive)
                 {
-                    if (!ped1.IsRagdoll)
+                    if (!ped.IsRagdoll)
                     {
-                        if (!ped1.IsInAir && !ped1.IsInWater)
+                        if (!ped.IsInAir && !ped.IsInWater)
                         {
-                            if (ped1.Velocity.Length() > MAX_HOOKED_PED_SPEED)
+                            if (ped.Velocity.Length() > MAX_HOOKED_PED_SPEED)
                             {
-                                Util.MakePedRagdoll(ped1, PED_RAGDOLL_DURATION);
-
-                                if (ropeWinding)
-                                    SetHookRopeWindingByIndex(hookIndex, false);
-                                else if (ropeUnwinding)
-                                    SetHookRopeUnwindingByIndex(hookIndex, false);
-
+                                Util.MakePedRagdoll(ped, PED_RAGDOLL_DURATION);
                                 RecreateEntityHook(hookIndex);
 
-                                if (ropeWinding)
-                                    SetHookRopeWindingByIndex(hookIndex, true);
-                                else if (ropeUnwinding)
-                                    SetHookRopeUnwindingByIndex(hookIndex, true);
+                                SetHookRopeWindingByIndex(hookIndex, ropeWinding);
+                                SetHookRopeUnwindingByIndex(hookIndex, ropeUnwinding);
                             }
                         }
                         else
                         {
-                            Util.MakePedRagdoll(ped1, PED_RAGDOLL_DURATION);
-
-                            if (ropeWinding)
-                                SetHookRopeWindingByIndex(hookIndex, false);
-                            else if (ropeUnwinding)
-                                SetHookRopeUnwindingByIndex(hookIndex, false);
-
+                            Util.MakePedRagdoll(ped, PED_RAGDOLL_DURATION);
                             RecreateEntityHook(hookIndex);
 
-                            if (ropeWinding)
-                                SetHookRopeWindingByIndex(hookIndex, true);
-                            else if (ropeUnwinding)
-                                SetHookRopeUnwindingByIndex(hookIndex, true);
+                            SetHookRopeWindingByIndex(hookIndex, ropeWinding);
+                            SetHookRopeUnwindingByIndex(hookIndex, ropeUnwinding);
                         }
                     }
                 }
-                else
+                else if (ped.Velocity.Length() < 0.2f && (!ped.IsInAir && !ped.IsInWater))
                 {
-                    if (ped1.Velocity.Length() < 0.1f && (!ped1.IsInAir && !ped1.IsInWater))
-                    {
-                        DeleteHookByIndex(hookIndex);
-                        return;
-                    }
+                    DeleteHookByIndex(hookIndex);
+                    return;
                 }
             }
-
-            if (Util.IsPlayer(entity2))
-            {
-                Ped ped2 = (Ped)entity2;
-
-                if (ped2.IsAlive)
-                {
-                    if (!ped2.IsRagdoll)
-                    {
-                        if (!ped2.IsInAir && !ped2.IsInWater)
-                        {
-                            if (ped2.Velocity.Length() > MAX_HOOKED_PED_SPEED)
-                            {
-                                Util.MakePedRagdoll(ped2, PED_RAGDOLL_DURATION);
-                                RecreateEntityHook(hookIndex);
-                            }
-                        }
-                        else
-                        {
-                            Util.MakePedRagdoll(ped2, PED_RAGDOLL_DURATION);
-                            RecreateEntityHook(hookIndex);
-                        }
-                    }
-                }
-                else
-                {
-                    if (ped2.Velocity.Length() < 0.1f && (!ped2.IsInAir && !ped2.IsInWater))
-                    {
-                        DeleteHookByIndex(hookIndex);
-                    }
-                }
-            }
+            //else
+            //{
+                
+            //    {
+            //        if (!ped.IsRagdoll)
+            //        {
+            //            if (!ped.IsInAir && !ped.IsInWater)
+            //            {
+            //                if (ped.Velocity.Length() > MAX_HOOKED_PED_SPEED)
+            //                {
+            //                    Util.MakePedRagdoll(ped, PED_RAGDOLL_DURATION);
+            //                    RecreateEntityHook(hookIndex);
+            //                }
+            //            }
+            //            else
+            //            {
+            //                Util.MakePedRagdoll(ped, PED_RAGDOLL_DURATION);
+            //                RecreateEntityHook(hookIndex);
+            //            }
+            //        }
+            //    }
+            //}
         }
 
 
@@ -763,14 +740,16 @@ namespace VRope
             }
         }
 
-        private void IncrementForceValueProc(bool negativeIncrement = false)
+        private void IncrementForceValueProc(bool negativeIncrement = false, bool halfIncrement = false)
         {
-            if (!negativeIncrement)
-                ForceMagnitude += FORCE_INCREMENT_VALUE;
-            else
-                ForceMagnitude -= FORCE_INCREMENT_VALUE;
+            float forceIncrement = (halfIncrement ? (FORCE_INCREMENT_VALUE / 2f) : FORCE_INCREMENT_VALUE);
 
-            subQueue.AddSubtitle(14, "VRope Force: " + ForceMagnitude.ToString("0.00"), 13);
+            if (!negativeIncrement)
+                ForceMagnitude += forceIncrement;
+            else
+                ForceMagnitude -= forceIncrement;
+
+            subQueue.AddSubtitle(14, "VRope Force: " + ForceMagnitude.ToString("0.00"), 16);
         }
 
         private void ApplyForceAtAimedProc(bool invertForce = false)
@@ -1220,7 +1199,7 @@ namespace VRope
                 if (hook.isEntity2AMapPosition)
                 {
                     hook.entity2 = CreateTargetProp(hook.hookPoint2, false, true, true, true, false);
-                    entity2HookPosition = hook.hookPoint2;
+                    entity2HookPosition = hook.entity2.Position;
                 }
                 else
                 {

@@ -97,6 +97,11 @@ namespace VRope
             //Reset();
         }
 
+        public bool HasPed()
+        {
+            return (Util.IsPed(entity1) || Util.IsPed(entity2));
+        }
+
         public bool Exists()
         {
             return (rope != null && rope.Exists());
