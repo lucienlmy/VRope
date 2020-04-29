@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // As informações gerais sobre um assembly são controladas por
@@ -7,10 +6,10 @@ using System.Runtime.InteropServices;
 // associada a um assembly.
 [assembly: AssemblyTitle("VRope")]
 [assembly: AssemblyDescription("GTA V Mod DLL")]
-[assembly: AssemblyConfiguration("")]
+[assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCompany("jeffsturm4nn")]
 [assembly: AssemblyProduct("VRope")]
-[assembly: AssemblyCopyright("Copyright ©  2019")]
+[assembly: AssemblyCopyright("Copyright ©  2019-2020")]
 [assembly: AssemblyTrademark("jeffsturm4nn")]
 [assembly: AssemblyCulture("")]
 
@@ -32,5 +31,5 @@ using System.Runtime.InteropServices;
 // É possível especificar todos os valores ou usar como padrão os Números de Build e da Revisão
 // usando o '*' como mostrado abaixo:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.10.*")]
+[assembly: AssemblyVersion("1.0.12.*")]
 #pragma warning disable CS7035 // A cadeia de caracteres de versão especificada não está de acordo com o formato recomendado - major.minor.build.revision

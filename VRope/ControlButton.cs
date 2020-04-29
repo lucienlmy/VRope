@@ -4,6 +4,20 @@ using System;
 
 namespace VRope
 {
+    public class ControllerState
+    {
+        public Gamepad buttonData;
+        public int buttonPressedCount = 0;
+
+        public ControllerState() { }
+
+        public ControllerState(Gamepad buttonData, int buttonPressedCount)
+        {
+            this.buttonData = buttonData;
+            this.buttonPressedCount = buttonPressedCount;
+        }
+    }
+
     public class ControlButton
     {
         public String name = "";

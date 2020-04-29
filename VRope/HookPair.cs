@@ -10,7 +10,7 @@ using GTA.Native;
 
 namespace VRope
 {
-    public class HookGroup
+    public class HookPair
     {
         public Rope rope;
         public RopeType ropeType;
@@ -29,18 +29,21 @@ namespace VRope
         public bool isWinding;
         public bool isUnwinding;
 
-        public HookGroup()
+        public bool isBalloonHook;
+
+        public HookPair()
         {
             Reset();
         }
 
-        public HookGroup(HookGroup other)
+        public HookPair(HookPair other)
         {
             this.rope = other.rope;
             this.entity1 = other.entity1;
             this.entity2 = other.entity2;
             this.ropeType = other.ropeType;
             this.isEntity2AMapPosition = other.isEntity2AMapPosition;
+            this.isBalloonHook = other.isBalloonHook;
             this.isWinding = other.isWinding;
             this.isUnwinding = other.isUnwinding;
             this.hookPoint1 = other.hookPoint1;
@@ -51,20 +54,19 @@ namespace VRope
             this.hookOffset2 = other.hookOffset2;
         }
 
-        public HookGroup(Rope rope, RopeType ropeType, Entity entity1, Vector3 hookPoint1, Vector3 hookOffset1, Entity entity2, Vector3 hookPoint2,
-                         Vector3 hookOffset2, bool isEntity2AMapPosition = false, bool isEntity1APed = false, bool isEntity2APed = false)
+        public bool Equals(HookPair other)
         {
-            this.rope = rope;
-            this.entity1 = entity1;
-            this.entity2 = entity2;
-            this.hookPoint1 = hookPoint1;
-            this.hookPoint2 = hookPoint2;
-            this.hookOffset1 = hookOffset1;
-            this.hookOffset2 = hookOffset2;
-            this.ropeType = ropeType;
-            this.isEntity2AMapPosition = isEntity2AMapPosition;
-            this.isWinding = false;
-            this.isUnwinding = false;
+            if (other == null)
+                return false;
+
+           return (this.isEntity2AMapPosition == other.isEntity2AMapPosition &&
+                this.isBalloonHook == other.isBalloonHook &&
+                this.entity1 == other.entity1 &&
+                this.entity2 == other.entity2 &&
+                Util.Truncate(this.hookPoint1) == Util.Truncate(other.hookPoint1) &&
+                Util.Truncate(this.hookPoint2) == Util.Truncate(other.hookPoint2) &&
+                Util.Truncate(this.hookOffset1) == Util.Truncate(other.hookOffset1) &&
+                Util.Truncate(this.hookOffset2) == Util.Truncate(other.hookOffset2));
         }
 
         private void Reset()
@@ -76,6 +78,7 @@ namespace VRope
             this.isEntity2AMapPosition = false;
             this.isWinding = false;
             this.isUnwinding = false;
+            this.isBalloonHook = false;
             this.hookPoint1 = Vector3.Zero;
             this.hookPoint2 = Vector3.Zero;
             this.hookOffset1 = Vector3.Zero;

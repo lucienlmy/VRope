@@ -9,7 +9,7 @@ namespace VRope
 {
     static class Keyboard
     {
-        private static Keys[] AllKeys = (Keys[])Enum.GetValues(typeof(Keys));
+        private const char SEPARATOR_CHAR = '+';
 
         public const Keys MOUSE_WHEEL_UP_KEY = Keys.F22;
         public const Keys MOUSE_WHEEL_DOWN_KEY = Keys.F23;
@@ -67,6 +67,70 @@ namespace VRope
         public static bool IsKeyListUp(List<Keys> keys)
         {
             return !IsKeyListPressed(keys);
+        }
+
+        public static bool IsKeyValid(Keys key)
+        {
+            return Enum.IsDefined(typeof(Keys), key);
+        }
+
+        public static bool IsKeyListValid(List<Keys> keys)
+        {
+            if (keys == null || keys.Count == 0)
+                return false;
+
+            bool isValid = true;
+
+            foreach (var key in keys)
+            {
+                if (!IsKeyValid(key))
+                {
+                    isValid = false;
+                    break;
+                }
+            }
+
+            return isValid;
+        }
+
+
+        public static List<Keys> TranslateKeyDataToKeyList(String keyData)
+        {
+            if (keyData == null || keyData.Length == 0)
+                return new List<Keys>(0);
+
+            keyData = keyData.Replace(" ", "");
+
+            List<Keys> resultList = new List<Keys>(4);
+
+            String[] keyStrings = keyData.Split(SEPARATOR_CHAR);
+
+            for (int i = 0; i < keyStrings.Length; i++)
+            {
+                String keyString = keyStrings[i];
+
+                if (keyString == "WeaponPrev")
+                {
+                    resultList.Add(Keyboard.MOUSE_WHEEL_UP_KEY);
+                }
+                else if (keyString == "WeaponNext")
+                {
+                    resultList.Add(Keyboard.MOUSE_WHEEL_DOWN_KEY);
+                }
+                else if(Enum.IsDefined(typeof(Keys), keyString))
+                {
+                    Keys key = (Keys)Enum.Parse(typeof(Keys), keyString);
+
+                    resultList.Add(key);
+                }
+                else
+                {
+                    resultList.Clear();
+                    break;
+                }
+            }
+
+            return resultList;
         }
     }
 }

@@ -1,23 +1,14 @@
 ﻿
 using System;
+using GTA;
 using SharpDX.XInput;
 
 namespace VRope
 {
-    public struct ControllerState
-    {
-        public Gamepad buttonData;
-        public int buttonPressedCount;
-
-        public ControllerState(Gamepad buttonData, int buttonPressedCount)
-        {
-            this.buttonData = buttonData;
-            this.buttonPressedCount = buttonPressedCount;
-        }
-    }
-
     static class XBoxController
     {
+        private const char SEPARATOR_CHAR = '+';
+
         public static byte LEFT_TRIGGER_THRESHOLD = 255;
         public static byte RIGHT_TRIGGER_THRESHOLD = 255;
         public static short LEFT_STICK_THRESHOLD = 32767;
@@ -181,5 +172,84 @@ namespace VRope
                 oldControllerState = newControllerState;
             }
         }
+
+        public static ControllerState TranslateButtonStringToButtonData(String buttonData)
+        {
+            if (buttonData == null || buttonData.Length == 0)
+                return new ControllerState();
+
+            buttonData = buttonData.Replace(" ", "");
+
+            Gamepad resultData = new Gamepad();
+            bool hasInvalidKey = false;
+
+            String[] buttonStrings = buttonData.Split(SEPARATOR_CHAR);
+
+            for (int i = 0; i < buttonStrings.Length; i++)
+            {
+                String buttonString = buttonStrings[i];
+
+                if (buttonString == "LeftTrigger")
+                {
+                    resultData.LeftTrigger = XBoxController.LEFT_TRIGGER_THRESHOLD;
+                }
+                else if (buttonString == "RightTrigger")
+                {
+                    resultData.RightTrigger = XBoxController.RIGHT_TRIGGER_THRESHOLD;
+                }
+
+                else if (buttonString == "LeftStickUp")
+                {
+                    resultData.LeftThumbY = XBoxController.LEFT_STICK_THRESHOLD;
+                }
+                else if (buttonString == "LeftStickDown")
+                {
+                    resultData.LeftThumbY = (short)-XBoxController.LEFT_STICK_THRESHOLD;
+                }
+                else if (buttonString == "LeftStickLeft")
+                {
+                    resultData.LeftThumbX = (short)-XBoxController.LEFT_STICK_THRESHOLD;
+                }
+                else if (buttonString == "LeftStickRight")
+                {
+                    resultData.LeftThumbX = XBoxController.LEFT_STICK_THRESHOLD;
+                }
+
+                else if (buttonString == "RightStickUp")
+                {
+                    resultData.RightThumbY = XBoxController.RIGHT_STICK_THRESHOLD;
+                }
+                else if (buttonString == "RightStickDown")
+                {
+                    resultData.RightThumbY = (short)-XBoxController.RIGHT_STICK_THRESHOLD;
+                }
+                else if (buttonString == "RightStickLeft")
+                {
+                    resultData.RightThumbX = (short)-XBoxController.RIGHT_STICK_THRESHOLD;
+                }
+                else if (buttonString == "RightStickRight")
+                {
+                    resultData.RightThumbX = XBoxController.RIGHT_STICK_THRESHOLD;
+                }
+
+                else if(Enum.IsDefined(typeof(GamepadButtonFlags), buttonString))
+                {
+                    GamepadButtonFlags buttonFlag = (GamepadButtonFlags)Enum.Parse(typeof(GamepadButtonFlags), buttonString);
+
+                    resultData.Buttons |= buttonFlag;
+                }
+                else
+                {
+                    hasInvalidKey = true;
+                    break;
+                }
+            }
+
+            if (!hasInvalidKey)
+                return new ControllerState(resultData, XBoxController.GetButtonPressedCount(resultData));
+            else
+                return new ControllerState(resultData, -1);
+        }
+
     }
 }

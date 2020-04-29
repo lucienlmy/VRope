@@ -10,9 +10,29 @@ namespace VRope
     {
         private static Bone[] PedBoneArray = (Bone[])Enum.GetValues(typeof(Bone));      
 
+        public static Vector3 Truncate(Vector3 v)
+        {
+            return new Vector3((float)Math.Truncate(v.X), (float)Math.Truncate(v.Y), (float)Math.Truncate(v.Z));
+        }
+
         public static bool IsPed(Entity e)
         {
             return (e != null && e.GetType().ToString() == "GTA.Ped");
+        }
+
+        public static bool IsPed(int index)
+        {
+            return Function.Call<bool>(Hash.IS_ENTITY_A_PED, index);
+        }
+
+        public static bool IsPedSittingInAVehicle(int index)
+        {
+            return Function.Call<bool>(Hash.IS_PED_SITTING_IN_ANY_VEHICLE, index);
+        }
+
+        public static Vehicle GetVehiclePedIsIn(int index)
+        {
+            return new Vehicle(Function.Call<int>(Hash.GET_VEHICLE_PED_IS_IN, index, 0));
         }
 
         public static bool IsVehicle(Entity e)
@@ -20,15 +40,36 @@ namespace VRope
             return (e != null && e.GetType().ToString() == "GTA.Vehicle");
         }
 
+        public static bool IsVehicle(int index)
+        {
+            return Function.Call<bool>(Hash.IS_ENTITY_A_VEHICLE, index);
+        }
+
         public static bool IsPlayer(Entity e)
         {
             return (e != null && e == Game.Player.Character);
+        }
+
+        public static bool IsPlayer(int index)
+        {
+            return (Function.Call<int>(Hash.GET_PLAYER_INDEX) == index);
         }
 
         public static bool IsProp(Entity e)
         {
             return (e != null && e.GetType().ToString() == "GTA.Prop");
         }
+
+        public static bool IsProp(int index)
+        {
+            return Function.Call<bool>(Hash.IS_ENTITY_AN_OBJECT, index);
+        }
+
+        public static bool IsEntity(int index)
+        {
+            return Function.Call<bool>(Hash.IS_AN_ENTITY, index);
+        }
+
 
         public static bool IsValid(Entity e)
         {
@@ -144,9 +185,9 @@ namespace VRope
 
             //Vector3 directionVec = CalculateDirectionVector3d(cameraRotation);
 
-            //Vector3 multiplied = new Vector3(directionVec.X * 1000.0f, directionVec.Y * 1000.0f, directionVec.Z * 1000.0f);
+            //Vector3 multiplied = new Vector3(directionVec.X * 100.0f, directionVec.Y * 100.0f, directionVec.Z * 100.0f);
 
-            //RaycastResult rayResult = World.Raycast(cameraPosition, cameraPosition + (multiplied * 5000f), IntersectOptions.Everything);
+            //RaycastResult rayResult = World.RaycastCapsule(cameraPosition, cameraPosition + (multiplied * 1000f), 0.5f, IntersectOptions.Everything);
 
             RaycastResult rayResult = World.GetCrosshairCoordinates();
 
@@ -175,5 +216,38 @@ namespace VRope
             Function.Call(Hash.SET_PED_TO_RAGDOLL, ped.Handle, duration, duration, 0, 0, 0, 0);
         }
 
+        public unsafe static bool GetEntityPlayerIsAimingAt(ref Entity entity)
+        {
+            int playerIndex = Function.Call<int>(Hash.GET_PLAYER_INDEX);
+
+            int entityIndex = 0;
+
+            if(Function.Call<bool>(Hash.GET_ENTITY_PLAYER_IS_FREE_AIMING_AT, playerIndex, &entityIndex))
+            {
+                if (IsPed(entityIndex))
+                {
+                    if(IsPedSittingInAVehicle(entityIndex))
+                    {
+                        entity = GetVehiclePedIsIn(entityIndex);
+                    }
+                    else
+                    {
+                        entity = new Ped(entityIndex);
+                    }
+                }
+                else if (IsVehicle(entityIndex))
+                {
+                    entity = new Vehicle(entityIndex);
+                }
+                else if(IsProp(entityIndex))
+                {
+                    entity = new Prop(entityIndex);
+                }
+
+                return true;
+            }
+
+            return false;
+        }
     }
 }

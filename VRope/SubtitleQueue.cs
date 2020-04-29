@@ -22,6 +22,7 @@ namespace VRope
         }
 
         private List<SubtitleData> queue = new List<SubtitleData>(50);
+        private bool blocked { get; set; } = false;
 
         private SubtitleData GetSubtitle(long index)
         {
@@ -37,12 +38,13 @@ namespace VRope
 
         public void AddSubtitle(String subtitle, int durationMs = 10)
         {
-            AddSubtitle(Environment.TickCount, subtitle, durationMs);
+            if(!blocked)
+                AddSubtitle(Environment.TickCount, subtitle, durationMs);
         }
 
         public void AddSubtitle(long index, String subtitle, int durationMs)
         {
-            if (subtitle == null || subtitle.Length == 0 || durationMs < 1)
+            if (blocked || subtitle == null || subtitle.Length == 0 || durationMs < 1)
                 return;
 
             SubtitleData subData = GetSubtitle(index);
@@ -88,7 +90,10 @@ namespace VRope
         public String MountSubtitle(bool decreaseDurations = true)
         {
             String subtitle = "";
-            
+
+            if (blocked)
+                return subtitle;
+
             for(int i=0; i<queue.Count; i++)
             {
                 if (queue[i].duration > 0)
@@ -107,7 +112,8 @@ namespace VRope
 
         public void ShowSubtitle()
         {
-            UI.ShowSubtitle(MountSubtitle());
+            if(!blocked)
+                UI.ShowSubtitle(MountSubtitle());
         }
     }
 }
