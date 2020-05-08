@@ -18,6 +18,7 @@ namespace VRope
         public Entity entity1;
         public Entity entity2;
 
+        public bool isEntity1AMapPosition;
         public bool isEntity2AMapPosition;
 
         public Vector3 hookPoint1;
@@ -38,10 +39,16 @@ namespace VRope
 
         public HookPair(HookPair other)
         {
+            CopyFrom(other);
+        }
+
+        public void CopyFrom(HookPair other)
+        {
             this.rope = other.rope;
             this.entity1 = other.entity1;
             this.entity2 = other.entity2;
             this.ropeType = other.ropeType;
+            this.isEntity1AMapPosition = other.isEntity1AMapPosition;
             this.isEntity2AMapPosition = other.isEntity2AMapPosition;
             this.isBalloonHook = other.isBalloonHook;
             this.isWinding = other.isWinding;
@@ -75,6 +82,7 @@ namespace VRope
             this.entity1 = null;
             this.entity2 = null;
             this.ropeType = (RopeType)1;
+            this.isEntity1AMapPosition = false;
             this.isEntity2AMapPosition = false;
             this.isWinding = false;
             this.isUnwinding = false;
@@ -92,11 +100,16 @@ namespace VRope
             if (Exists())
                 rope.Delete();
 
+            if (isEntity1AMapPosition && Util.IsProp(entity1))
+            {
+                Util.DeleteEntity(entity1);
+            }
+
             if (isEntity2AMapPosition && Util.IsProp(entity2))
             {
                 Util.DeleteEntity(entity2);
             }
-            
+
             //Reset();
         }
 
@@ -114,7 +127,8 @@ namespace VRope
         {
             return (Exists() 
                 && entity1 != null && entity2 != null 
-                && entity1.Exists() && entity2.Exists());
+                && entity1.Exists() && !(isEntity1AMapPosition && isEntity2AMapPosition)
+                && entity2.Exists());
         }
     }
 }

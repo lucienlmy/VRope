@@ -15,6 +15,11 @@ namespace VRope
             return new Vector3((float)Math.Truncate(v.X), (float)Math.Truncate(v.Y), (float)Math.Truncate(v.Z));
         }
 
+        public static bool IsStatic(Entity e)
+        {
+            return (e != null && Function.Call<bool>(Hash.IS_ENTITY_STATIC, e.Handle));
+        }
+
         public static bool IsPed(Entity e)
         {
             return (e != null && e.GetType().ToString() == "GTA.Ped");
