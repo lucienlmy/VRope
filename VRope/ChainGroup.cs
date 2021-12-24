@@ -15,7 +15,7 @@ namespace VRope
 
         public List<HookPair> segments = new List<HookPair>(MAX_CHAIN_SEGMENTS);
 
-        public float segmentLength;
+        public float segmentLength = 1;
 
         public ChainGroup()
         {
