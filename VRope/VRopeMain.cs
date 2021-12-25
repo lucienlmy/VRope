@@ -51,8 +51,8 @@ namespace VRope
         //float CHAIN_JOINT_PROP_MASS = 10.0f;
 
         private const int INIT_HOOK_LIST_CAPACITY = 200;
-        private const float MAX_HOOKED_PED_SPEED = 3.0f;
-        private const int PED_RAGDOLL_DURATION = 5000;
+        private const float MAX_HOOKED_PED_SPEED = 0.5f;
+        private const int PED_RAGDOLL_DURATION = 60000;
         private const char SEPARATOR_CHAR = '+';
 
         private const float MAX_MIN_ROPE_LENGTH = 1000f;
@@ -86,7 +86,7 @@ namespace VRope
 
         private RopeType EntityToEntityHookRopeType;
         private RopeType PlayerToEntityHookRopeType;
-        private RopeType ChainSegmentRopeType;
+        //private RopeType ChainSegmentRopeType;
 
         private float MinRopeLength;
         private float ForceMagnitude;
@@ -100,7 +100,7 @@ namespace VRope
             {
                 CONFIG_FILE_NAME = (Directory.GetCurrentDirectory() + "\\scripts\\VRope.ini");
 
-                ProcessConfigFile();
+                ProcessVRopeConfigFile();
 
                 SortKeyTuples();
 
@@ -118,7 +118,7 @@ namespace VRope
             }
             catch (Exception exc)
             {
-                UI.Notify("VRope Init Error:\n" + exc.ToString());
+                UI.Notify("VRope Init Error:\n" + GetErrorMessage(exc));
             }
         }
 
@@ -338,7 +338,7 @@ namespace VRope
 
 
 
-        private void ProcessConfigFile()
+        private void ProcessVRopeConfigFile()
         {
             try
             {
@@ -371,7 +371,7 @@ namespace VRope
 
                 EntityToEntityHookRopeType = settings.GetValue<RopeType>("HOOK_ROPE_TYPES", "EntityToEntityHookRopeType", (RopeType)4);
                 PlayerToEntityHookRopeType = settings.GetValue<RopeType>("HOOK_ROPE_TYPES", "PlayerToEntityHookRopeType", (RopeType)3);
-                ChainSegmentRopeType = settings.GetValue<RopeType>("HOOK_ROPE_TYPES", "ChainSegmentRopeType", (RopeType)4);
+                //ChainSegmentRopeType = settings.GetValue<RopeType>("HOOK_ROPE_TYPES", "ChainSegmentRopeType", (RopeType)4);
 
                 ForceMagnitude = settings.GetValue("FORCE_MECHANICS_VARS", "DEFAULT_FORCE_VALUE", 70.0f);
                 BalloonUpForce = settings.GetValue("FORCE_MECHANICS_VARS", "DEFAULT_BALLOON_UP_FORCE_VALUE", 7.0f);
@@ -459,7 +459,7 @@ namespace VRope
                     if (hooks[i].HasPed())
                         ProcessPedsInHook(i);
 
-                    if (hooks[i].isBalloonHook)
+                    if (hooks[i].isEntity1ABalloon)
                         ProcessBalloonHook(i);
                 }
             }
@@ -471,7 +471,8 @@ namespace VRope
         {
             if (hookIndex >= 0 && hookIndex < hooks.Count)
             {
-                UI.Notify("Recreating Entity Hook");
+                if(DebugMode)
+                    UI.Notify("Recreating Entity Hook");
 
                 HookPair hook = new HookPair(hooks[hookIndex]);
 
@@ -503,35 +504,17 @@ namespace VRope
                 {
                     if (!ped.IsRagdoll)
                     {
-                        if (!ped.IsInAir && !ped.IsInWater)
-                        {
-                            if (ped.IsRunning || ped.IsSprinting || pedSpeed > MAX_HOOKED_PED_SPEED)
-                            {
-                                Util.MakePedRagdoll(ped, PED_RAGDOLL_DURATION);
-                                RecreateEntityHook(hookIndex);
+                        Util.MakePedRagdoll(ped, PED_RAGDOLL_DURATION);
+                        RecreateEntityHook(hookIndex);
 
-                                SetHookRopeWinding(hooks[hookIndex], ropeWinding);
-                                SetHookRopeUnwinding(hooks[hookIndex], ropeUnwinding);
-                            }
-                        }
-                        else
-                        {
-                            Util.MakePedRagdoll(ped, PED_RAGDOLL_DURATION);
-                            RecreateEntityHook(hookIndex);
-
-                            SetHookRopeWinding(hooks[hookIndex], ropeWinding);
-                            SetHookRopeUnwinding(hooks[hookIndex], ropeUnwinding);
-                        }
-                    }
-                    else if(ped.IsInAir || ped.IsInWater || pedSpeed > MAX_HOOKED_PED_SPEED)
-                    {
-                        Util.MakePedRagdoll(ped, UPDATE_FPS);
+                        SetHookRopeWinding(hooks[hookIndex], ropeWinding);
+                        SetHookRopeUnwinding(hooks[hookIndex], ropeUnwinding);
                     }
                 }
             }
             catch (Exception exc)
             {
-                UI.Notify("VRope ProcessPedsInHook() Error:\n" + exc.ToString() + "\nMod execution halted. \n" +
+                UI.Notify("VRope ProcessPedsInHook() Error:\n" + GetErrorMessage(exc) + "\nMod execution halted. \n" +
                         "Hook Count: " + hooks.Count + "\nError Hook Index: " + hookIndex);
                 DeleteAllHooks();
                 ModRunning = false;
@@ -613,7 +596,7 @@ namespace VRope
 
                     if (rayResult.DitHitEntity && Util.IsValid(targetEntity))
                     {
-                        
+
                         Vector3 pos = targetEntity.Position;
                         Vector3 rot = targetEntity.Rotation;
                         Vector3 vel = targetEntity.Velocity;
@@ -623,7 +606,7 @@ namespace VRope
                         DebugInfo += "\n | Entity Detected: " + targetEntity.GetType() + " | " + (Util.IsStatic(targetEntity) ? "Static" : "Dynamic") +
                                     "\n Position(X:" + pos.X.ToString(format) + ", Y:" + pos.Y.ToString(format) + ", Z:" + pos.Z.ToString(format) + ")" +
                                     "\n Rotation(" + rot.X.ToString(format) + ", Y:" + rot.Y.ToString(format) + ", Z:" + rot.Z.ToString(format) + ")" +
-                                    "\n Velocity(" + vel.X.ToString(format) + ", Y:" + vel.Y.ToString(format) + ", Z:" + vel.Z.ToString(format) + ")" +
+                                    //"\n Velocity(" + vel.X.ToString(format) + ", Y:" + vel.Y.ToString(format) + ", Z:" + vel.Z.ToString(format) + ")" +
                                     "\n Speed(" + speed.ToString(format) + ") | Distance(" + dist.ToString(format) + ")\n";
                     }
                 }
@@ -642,6 +625,11 @@ namespace VRope
                 DebugInfo += "\n Player[" + " Speed(" + Game.Player.Character.Velocity.Length().ToString(format) + ")," +
                             " Position(X:" + ppos.X.ToString(format) + ", Y:" + ppos.Y.ToString(format) + ", Z:" + ppos.Z.ToString(format) + ") ]";
             }
+        }
+
+        private String GetErrorMessage(Exception exc)
+        {
+            return (DebugMode ? exc.ToString() : exc.Message);
         }
 
 
@@ -839,7 +827,7 @@ namespace VRope
             }
             catch (Exception exc)
             {
-                UI.Notify("VRope Runtime Error:\n" + exc.ToString());
+                UI.Notify("VRope Runtime Error:\n" + GetErrorMessage(exc));
             }
 
         }
@@ -1231,7 +1219,7 @@ namespace VRope
             }
             catch (Exception exc)
             {
-                UI.Notify("VRope ApplyForceObjectPairProc Error:\n" + exc.ToString());
+                UI.Notify("VRope ApplyForceObjectPairProc Error:\n" + GetErrorMessage(exc));
             }
         }
 
@@ -1457,7 +1445,7 @@ namespace VRope
             }
             catch (Exception exc)
             {
-                UI.Notify("VRope Runtime Error:\n" + exc.ToString() + "\nMod execution halted. " + exc.Message);
+                UI.Notify("VRope Runtime Error:\n" + GetErrorMessage(exc) + "\nMod execution halted.");
                 DeleteAllHooks();
                 ModRunning = false;
                 ModActive = false;
@@ -1500,7 +1488,7 @@ namespace VRope
             }
             catch (Exception exc)
             {
-                UI.Notify("VRope OnKeyDown Error:\n" + exc.ToString(), false);
+                UI.Notify("VRope OnKeyDown Error:\n" + GetErrorMessage(exc), false);
             }
         }
 
@@ -1656,6 +1644,24 @@ namespace VRope
         }
 
 
+
+        private bool CheckHookPermission(HookPair hook)
+        {
+            if (hook == null || hook.entity1 == null)
+                return false;
+
+            if (Util.IsPed(hook.entity1) && !Util.IsPlayer(hook.entity1))
+            {
+                if (Util.IsPed(hook.entity2) || IsEntityHooked(hook.entity1))
+                    return false;
+            }
+
+            if (Util.IsPed(hook.entity2) && IsEntityHooked(hook.entity2))
+                return false;
+
+            return true;
+        }
+
         private HookPair CreateEntityHook(HookPair hook, bool copyHook = true, bool hookAtBonePositions = true, float minRopeLength = MIN_MIN_ROPE_LENGTH)
         {
             try
@@ -1706,7 +1712,7 @@ namespace VRope
                 if (Util.IsVehicle(hook.entity2))
                     hook.entity2.ApplyForce(new Vector3(1, 0, 0));
 
-                hook.isBalloonHook = BalloonHookMode;
+                hook.isEntity1ABalloon = BalloonHookMode;
 
                 //UI.Notify("Hook Created. E1 Null: " + (hook.entity1 == null ? "true" : "false") + "| E2 Null: " +
                 //    (hook.entity2 == null ? "true" : "false") + "Valid: " + hook.IsValid());
@@ -1718,18 +1724,22 @@ namespace VRope
             }
             catch (Exception exc)
             {
-                UI.Notify("VRope CreateEntityHook() Error:\n" + exc.ToString());
+                UI.Notify("VRope CreateEntityHook() Error:\n" + GetErrorMessage(exc));
                 return hook;
             }
         }
 
         private void CreateHook(HookPair source, bool copyHook = true)
         {
+            if (!CheckHookPermission(source))
+                return;
+
             HookPair resultHook = CreateEntityHook(source, copyHook);
 
             if (resultHook != null)
                 hooks.Add(resultHook);
         }
+
 
 
         //private void CreateRopeChain(HookPair hook, bool copyHook = true, bool hookAtBonePositions = true)

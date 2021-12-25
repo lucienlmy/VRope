@@ -21,16 +21,16 @@ namespace VRope
         public bool isEntity1AMapPosition;
         public bool isEntity2AMapPosition;
 
+        public bool isEntity1ABalloon;
+
+        public bool isWinding;
+        public bool isUnwinding;
+
         public Vector3 hookPoint1;
         public Vector3 hookPoint2;
 
         public Vector3 hookOffset1;
         public Vector3 hookOffset2;
-
-        public bool isWinding;
-        public bool isUnwinding;
-
-        public bool isBalloonHook;
 
         public HookPair()
         {
@@ -50,7 +50,7 @@ namespace VRope
             this.ropeType = other.ropeType;
             this.isEntity1AMapPosition = other.isEntity1AMapPosition;
             this.isEntity2AMapPosition = other.isEntity2AMapPosition;
-            this.isBalloonHook = other.isBalloonHook;
+            this.isEntity1ABalloon = other.isEntity1ABalloon;
             this.isWinding = other.isWinding;
             this.isUnwinding = other.isUnwinding;
             this.hookPoint1 = other.hookPoint1;
@@ -67,7 +67,7 @@ namespace VRope
                 return false;
 
            return (this.isEntity2AMapPosition == other.isEntity2AMapPosition &&
-                this.isBalloonHook == other.isBalloonHook &&
+                this.isEntity1ABalloon == other.isEntity1ABalloon &&
                 this.entity1 == other.entity1 &&
                 this.entity2 == other.entity2 &&
                 Util.Truncate(this.hookPoint1) == Util.Truncate(other.hookPoint1) &&
@@ -86,7 +86,7 @@ namespace VRope
             this.isEntity2AMapPosition = false;
             this.isWinding = false;
             this.isUnwinding = false;
-            this.isBalloonHook = false;
+            this.isEntity1ABalloon = false;
             this.hookPoint1 = Vector3.Zero;
             this.hookPoint2 = Vector3.Zero;
             this.hookOffset1 = Vector3.Zero;
