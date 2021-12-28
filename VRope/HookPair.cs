@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 using GTA;
 using GTA.Math;
-using GTA.Native;
 
 namespace VRope
 {
@@ -25,6 +19,8 @@ namespace VRope
 
         public bool isWinding;
         public bool isUnwinding;
+
+        //public bool isRopeDetachedFromPed;
 
         public Vector3 hookPoint1;
         public Vector3 hookPoint2;
@@ -81,7 +77,6 @@ namespace VRope
             this.rope = null;
             this.entity1 = null;
             this.entity2 = null;
-            this.ropeType = (RopeType)1;
             this.isEntity1AMapPosition = false;
             this.isEntity2AMapPosition = false;
             this.isWinding = false;
@@ -93,6 +88,7 @@ namespace VRope
             this.hookOffset2 = Vector3.Zero;
             this.rope = null;
             this.ropeType = (RopeType)4;
+            //this.isRopeDetachedFromPed = false;
         }
 
         public void Delete()

@@ -23,8 +23,8 @@ namespace VRope
         public const String MOD_NAME = "VRope";
         public const String MOD_DEVELOPER = "jeffsturm4nn"; // :D
         public const int VERSION_MINOR = 0;
-        public const int VERSION_BUILD = 12;
-        public const String VERSION_SUFFIX = "a fix 2 DevBuild";
+        public const int VERSION_BUILD = 11;
+        public const String VERSION_SUFFIX = "a fix 2";
 
         private const int UPDATE_INTERVAL = 11; //milliseconds.
         private const int UPDATE_FPS = (1000 / UPDATE_INTERVAL);
@@ -35,8 +35,9 @@ namespace VRope
         private float MAX_HOOK_CREATION_DISTANCE;
         private float MAX_HOOKED_ENTITY_DISTANCE;
         private float MAX_HOOKED_PED_DISTANCE;
-        private int MAX_SELECTED_HOOKS = 50;
+        private int MAX_SELECTED_HOOKS = 30;
         private bool SHOW_HOOK_ROPE_PROP = true;
+        private bool HOOK_PEDS_AT_BONES_COORDS = true;
 
         private bool CONTINUOUS_FORCE;
         private float FORCE_INCREMENT_VALUE;
@@ -50,7 +51,7 @@ namespace VRope
         //private float CHAIN_JOINT_OFFSET = 0.3f;    
         //float CHAIN_JOINT_PROP_MASS = 10.0f;
 
-        private const int INIT_HOOK_LIST_CAPACITY = 200;
+        private const int INIT_HOOK_LIST_CAPACITY = 150;
         private const float MAX_HOOKED_PED_SPEED = 0.5f;
         private const int PED_RAGDOLL_DURATION = 60000;
         private const char SEPARATOR_CHAR = '+';
@@ -65,7 +66,7 @@ namespace VRope
         public bool ModRunning = false;
         private bool FirstTime = true;
         private bool NoSubtitlesMode = false;
-        private bool DebugMode = true;
+        private bool DebugMode = false;
 
 
         private Model ropeHookPropModel;
@@ -249,6 +250,9 @@ namespace VRope
             RegisterControlButton("DeleteAllHooksButton",
                 settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "DeleteAllHooksButton", "None"),
                 (Action)DeleteAllHooks, TriggerCondition.PRESSED);
+            RegisterControlButton("DeleteFirstHookButton",
+                settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "DeleteFirstHookButton", "None"),
+                (Action)DeleteFirstHookProc, TriggerCondition.PRESSED);
 
             RegisterControlButton("WindLastHookRopeButton",
                 settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "WindLastHookRopeButton", "None"),
@@ -392,7 +396,6 @@ namespace VRope
         }
 
 
-
         private void ProcessHooks()
         {
             Entity playerEntity = Game.Player.Character;
@@ -467,18 +470,31 @@ namespace VRope
         }
 
 
+        private void RecreateEntityHooks(Entity entity)
+        {
+            List<int> indexes = GetIndexOfHooksThatContains(entity);
+
+            if (indexes != null)
+            {
+                for (int i = 0; i < indexes.Count; i++)
+                {
+                    RecreateEntityHook(indexes[i]);
+                }
+            }
+        }
+
         private void RecreateEntityHook(int hookIndex)
         {
             if (hookIndex >= 0 && hookIndex < hooks.Count)
             {
                 if(DebugMode)
-                    UI.Notify("Recreating Entity Hook");
+                    UI.Notify("Recreating Entity Hook i:"+hookIndex);
 
-                HookPair hook = new HookPair(hooks[hookIndex]);
+                HookPair copyHook = new HookPair(hooks[hookIndex]);
 
                 DeleteHookByIndex(hookIndex, true);
 
-                hooks.Add(CreateEntityHook(hook, true, false));
+                hooks.Add(CreateEntityHook(copyHook, true, HOOK_PEDS_AT_BONES_COORDS));
             }
         }
 
@@ -496,9 +512,8 @@ namespace VRope
                     else return;
                 }
 
-                bool ropeWinding = hooks[hookIndex].isWinding;
-                bool ropeUnwinding = hooks[hookIndex].isUnwinding;
-                float pedSpeed = ped.Velocity.Length();
+                bool isWinding = hooks[hookIndex].isWinding;
+                bool isUnwinding = hooks[hookIndex].isUnwinding;
 
                 if (ped.IsAlive)
                 {
@@ -507,10 +522,11 @@ namespace VRope
                         Util.MakePedRagdoll(ped, PED_RAGDOLL_DURATION);
                         RecreateEntityHook(hookIndex);
 
-                        SetHookRopeWinding(hooks[hookIndex], ropeWinding);
-                        SetHookRopeUnwinding(hooks[hookIndex], ropeUnwinding);
+                        SetHookRopeWindingByIndex(hookIndex, isWinding);
+                        SetHookRopeUnwindingByIndex(hookIndex, isUnwinding);
                     }
                 }
+
             }
             catch (Exception exc)
             {
@@ -564,21 +580,6 @@ namespace VRope
                 Game.Player.IsAiming;
         }
 
-        public bool IsEntityHooked(Entity entity)
-        {
-            if (entity == null || !entity.Exists())
-                return false;
-
-            for (int i = 0; i < hooks.Count; i++)
-            {
-                if ((hooks[i].entity1 != null && hooks[i].entity1.Equals(entity)) ||
-                    (hooks[i].entity2 != null && hooks[i].entity2.Equals(entity)))
-                    return true;
-            }
-
-            return false;
-        }
-
 
         private void UpdateDebugStuff()
         {
@@ -607,17 +608,17 @@ namespace VRope
                                     "\n Position(X:" + pos.X.ToString(format) + ", Y:" + pos.Y.ToString(format) + ", Z:" + pos.Z.ToString(format) + ")" +
                                     "\n Rotation(" + rot.X.ToString(format) + ", Y:" + rot.Y.ToString(format) + ", Z:" + rot.Z.ToString(format) + ")" +
                                     //"\n Velocity(" + vel.X.ToString(format) + ", Y:" + vel.Y.ToString(format) + ", Z:" + vel.Z.ToString(format) + ")" +
-                                    "\n Speed(" + speed.ToString(format) + ") | Distance(" + dist.ToString(format) + ")\n";
+                                    "\n Speed(" + speed.ToString(format) + ") | Distance(" + dist.ToString(format) + ")";
                     }
                 }
 
                 if (hooks.Count > 0 && hooks.Last() != null && hooks.Last().Exists())
                 {
                     if (hooks.Last().entity1 != null)
-                        DebugInfo += "\n| LastHook.E1 Distance: " + Game.Player.Character.Position.DistanceTo(hooks.Last().entity1.Position).ToString("0.00");
+                        DebugInfo += " | E1.Distance(" + Game.Player.Character.Position.DistanceTo(hooks.Last().entity1.Position).ToString("0.00") + ")";
 
                     if (hooks.Last().entity2 != null)
-                        DebugInfo += " | LastHook.E2 Distance: " + Game.Player.Character.Position.DistanceTo(hooks.Last().entity2.Position).ToString("0.00");
+                        DebugInfo += " |E2.Distance(" + Game.Player.Character.Position.DistanceTo(hooks.Last().entity2.Position).ToString("0.00") + ")";
                 }
 
                 Vector3 ppos = Game.Player.Character.Position;
@@ -1645,19 +1646,59 @@ namespace VRope
 
 
 
+        public bool IsEntityHooked(Entity entity)
+        {
+            if (entity == null || !entity.Exists())
+                return false;
+
+            for (int i = 0; i < hooks.Count; i++)
+            {
+                if ((hooks[i].entity1 != null && hooks[i].entity1.Equals(entity)) ||
+                    (hooks[i].entity2 != null && hooks[i].entity2.Equals(entity)))
+                    return true;
+            }
+
+            return false;
+        }
+
+        List<int> GetIndexOfHooksThatContains(Entity entity)
+        {
+            if (entity == null || !entity.Exists())
+                return null;
+
+            List<int> indexes = new List<int>();
+
+            for (int i = 0; i < hooks.Count; i++)
+            {
+                if ((hooks[i].entity1 != null && hooks[i].entity1.Equals(entity)) ||
+                    (hooks[i].entity2 != null && hooks[i].entity2.Equals(entity)))
+                {
+                    indexes.Add(i);
+                }
+            }
+
+            return indexes;
+        }
+
         private bool CheckHookPermission(HookPair hook)
         {
             if (hook == null || hook.entity1 == null)
                 return false;
 
+            if (hook.entity2 == null && !hook.isEntity2AMapPosition)
+                return false;
+
             if (Util.IsPed(hook.entity1) && !Util.IsPlayer(hook.entity1))
             {
-                if (Util.IsPed(hook.entity2) || IsEntityHooked(hook.entity1))
+                if ( ((Ped)hook.entity1).IsDead || Util.IsPed(hook.entity2) || IsEntityHooked(hook.entity1) )
                     return false;
             }
 
-            if (Util.IsPed(hook.entity2) && IsEntityHooked(hook.entity2))
-                return false;
+            if (Util.IsPed(hook.entity2))
+            {
+                if ( ((Ped)hook.entity2).IsDead || IsEntityHooked(hook.entity2) )
+                    return false;
+            }
 
             return true;
         }
@@ -1683,17 +1724,16 @@ namespace VRope
                     entity2HookPosition = hook.entity2.Position + hook.hookOffset2;
                 }
 
-                if (hookAtBonePositions)
+                if (Util.IsPed(hook.entity1) && !Util.IsPlayer(hook.entity1))
                 {
-                    if (Util.IsPed(hook.entity1) && !Util.IsPlayer(hook.entity1))
-                    {
+                    if (hookAtBonePositions)
                         entity1HookPosition = Util.GetNearestBonePosition((Ped)hook.entity1, entity1HookPosition);
-                    }
+                }
 
-                    if (Util.IsPed(hook.entity2))
-                    {
+                if (Util.IsPed(hook.entity2))
+                {
+                    if(hookAtBonePositions)
                         entity2HookPosition = Util.GetNearestBonePosition((Ped)hook.entity2, entity2HookPosition);
-                    }
                 }
 
                 float ropeLength = entity1HookPosition.DistanceTo(entity2HookPosition); //TRY1
@@ -1734,12 +1774,11 @@ namespace VRope
             if (!CheckHookPermission(source))
                 return;
 
-            HookPair resultHook = CreateEntityHook(source, copyHook);
+            HookPair resultHook = CreateEntityHook(source, copyHook, HOOK_PEDS_AT_BONES_COORDS);
 
             if (resultHook != null)
                 hooks.Add(resultHook);
         }
-
 
 
         //private void CreateRopeChain(HookPair hook, bool copyHook = true, bool hookAtBonePositions = true)

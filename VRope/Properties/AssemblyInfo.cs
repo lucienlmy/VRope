@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // conjunto de atributos. Altere estes valores de atributo para modificar as informações
 // associada a um assembly.
 [assembly: AssemblyTitle("VRope")]
-[assembly: AssemblyDescription("GTA V Mod DLL")]
+[assembly: AssemblyDescription("GTAV Mod DLL")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCompany("jeffsturm4nn (Jefferson Sales)")]
 [assembly: AssemblyProduct("VRope")]
-[assembly: AssemblyCopyright("Copyright ©  2019-2021")]
+[assembly: AssemblyCopyright("Copyright ©  2019-2022")]
 [assembly: AssemblyTrademark("jeffsturm4nn™")]
 [assembly: AssemblyCulture("")]
 
