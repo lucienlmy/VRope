@@ -16,6 +16,9 @@ namespace VRope
         public bool isEntity2AMapPosition;
 
         public bool isEntity1ABalloon;
+        public bool isEntity2ABalloon;
+
+        public bool isEntity1APlayer;
 
         public bool isWinding;
         public bool isUnwinding;
@@ -47,6 +50,7 @@ namespace VRope
             this.isEntity1AMapPosition = other.isEntity1AMapPosition;
             this.isEntity2AMapPosition = other.isEntity2AMapPosition;
             this.isEntity1ABalloon = other.isEntity1ABalloon;
+            this.isEntity2ABalloon = other.isEntity2ABalloon;
             this.isWinding = other.isWinding;
             this.isUnwinding = other.isUnwinding;
             this.hookPoint1 = other.hookPoint1;
@@ -55,6 +59,7 @@ namespace VRope
             this.ropeType = other.ropeType;
             this.hookOffset1 = other.hookOffset1;
             this.hookOffset2 = other.hookOffset2;
+            this.isEntity1APlayer = other.isEntity1APlayer;
         }
 
         public bool Equals(HookPair other)
@@ -82,13 +87,14 @@ namespace VRope
             this.isWinding = false;
             this.isUnwinding = false;
             this.isEntity1ABalloon = false;
+            this.isEntity2ABalloon = false;
             this.hookPoint1 = Vector3.Zero;
             this.hookPoint2 = Vector3.Zero;
             this.hookOffset1 = Vector3.Zero;
             this.hookOffset2 = Vector3.Zero;
             this.rope = null;
             this.ropeType = (RopeType)4;
-            //this.isRopeDetachedFromPed = false;
+            this.isEntity1APlayer = false;
         }
 
         public void Delete()
@@ -124,6 +130,7 @@ namespace VRope
             return (Exists() 
                 && entity1 != null && entity2 != null 
                 && entity1.Exists() && !(isEntity1AMapPosition && isEntity2AMapPosition)
+                //&& !( Util.IsPlayer(entity1) && !isEntity1APlayer )
                 && entity2.Exists());
         }
     }

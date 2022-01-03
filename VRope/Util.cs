@@ -8,6 +8,25 @@ namespace VRope
 {
     static class Util
     {
+        private static Random globalRandom = new Random(Guid.NewGuid().GetHashCode());
+
+        public static Random GetGlobalRandom()
+        {
+            return globalRandom; 
+        }
+
+        public static Vector3 GetRandom2DPositionAround(Vector3 center, float maxDistance)
+        {
+            float randX = (float)( -maxDistance + (GetGlobalRandom().NextDouble() * 2.0f * maxDistance) );
+            float randY = (float)( -maxDistance + (GetGlobalRandom().NextDouble() * 2.0f * maxDistance) );
+
+            center.X += randX;
+            center.Y += randY;
+
+            return center;
+        }
+
+
         private static Bone[] PedBoneArray = (Bone[])Enum.GetValues(typeof(Bone));      
 
         public static Vector3 Truncate(Vector3 v)
@@ -38,6 +57,21 @@ namespace VRope
         public static Vehicle GetVehiclePedIsIn(int index)
         {
             return new Vehicle(Function.Call<int>(Hash.GET_VEHICLE_PED_IS_IN, index, 0));
+        }
+
+        public static Vehicle GetVehiclePedIsIn(Ped ped, bool includeLastVehicle = false)
+        {
+            return Function.Call<Vehicle>(Hash.GET_VEHICLE_PED_IS_IN, ped, includeLastVehicle);
+        }
+
+        public static Vehicle GetVehiclePlayerIsIn(bool includeLastVehicle = false)
+        {
+            return GetVehiclePedIsIn(Game.Player.Character, includeLastVehicle);
+        }
+
+        public static bool IsVehiclePlayerIsIn(Entity vehicle, bool includeLastVehicle = false)
+        {
+            return (GetVehiclePlayerIsIn(includeLastVehicle) == vehicle);
         }
 
         public static bool IsVehicle(Entity e)
