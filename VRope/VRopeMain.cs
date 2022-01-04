@@ -98,6 +98,15 @@ namespace VRope
         private float BalloonUpForce;
         private bool SolidRopes = false;
         private bool BalloonHookMode = false;
+        private int CurrentHookFilterIndex = 0;
+
+        protected void UnusedTestFunc()
+        {
+            //HookFilter filter = new HookFilter("", "");
+            
+        }
+
+
 
         public VRopeMain()
         {
@@ -235,6 +244,10 @@ namespace VRope
 
             RegisterControlKey("AttachTransportHooksKey", settings.GetValue<String>("CONTROL_KEYBOARD", "AttachTransportHooksKey", "None"),
                 (Action)AttachTransportHooksProc, TriggerCondition.PRESSED);
+            RegisterControlKey("NextTransportHookFilterKey", settings.GetValue<String>("CONTROL_KEYBOARD", "NextTransportHookFilterKey", "None"),
+                (Action)delegate { CycleTransportHookFilterProc(true); }, TriggerCondition.PRESSED);
+            RegisterControlKey("PrevTransportHookFilterKey", settings.GetValue<String>("CONTROL_KEYBOARD", "PrevTransportHookFilterKey", "None"),
+                (Action)delegate { CycleTransportHookFilterProc(false); }, TriggerCondition.PRESSED);
 
             //RegisterControlKey("CreateRopeChainKey", settings.GetValue<String>("CONTROL_KEYBOARD", "CreateRopeChainKey", "None"), 
             //    (Action)AttachEntityToEntityChainProc, TriggerCondition.PRESSED);
@@ -322,6 +335,10 @@ namespace VRope
 
             RegisterControlButton("AttachTransportHooksButton", settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "AttachTransportHooksButton", "None"),
                 (Action)AttachTransportHooksProc, TriggerCondition.PRESSED);
+            RegisterControlKey("NextTransportHookFilterButton", settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "NextTransportHookFilterButton", "None"),
+                (Action)delegate { CycleTransportHookFilterProc(true); }, TriggerCondition.PRESSED);
+            RegisterControlKey("PrevTransportHookFilterButton", settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "PrevTransportHookFilterButton", "None"),
+                (Action)delegate { CycleTransportHookFilterProc(false); }, TriggerCondition.PRESSED);
         }
 
 
@@ -967,55 +984,105 @@ namespace VRope
         }
 
 
+
+        private void CycleTransportHookFilterProc(bool nextFilter)
+        {
+            if (nextFilter)
+            {
+                if ((CurrentHookFilterIndex + 1) < HookFilter.DefaultFilters.Count)
+                    CurrentHookFilterIndex++;
+                else
+                    CurrentHookFilterIndex = 0;
+            }
+            else
+            {
+                if ((CurrentHookFilterIndex - 1) >= 0)
+                    CurrentHookFilterIndex--;
+                else
+                    CurrentHookFilterIndex = HookFilter.DefaultFilters.Count - 1;
+            }
+
+            subQueue.AddSubtitle(1239, "VRope Transport Hook Filter: " + HookFilter.DefaultFilters[CurrentHookFilterIndex].label, 55);
+
+        }
+
+
+        private bool CheckTransportHookPermission(Entity entity)
+        {
+            if (entity == null || !entity.Exists())
+                return false;
+
+            if (entity == Util.GetVehiclePlayerIsIn() || 
+
+                Util.IsPlayer(entity) ||
+
+                !HookFilter.DefaultFilters[CurrentHookFilterIndex].matches(entity) ||
+
+                (Util.IsPed(entity) && ((Ped)entity).IsSittingInVehicle()) ||
+
+                playerAttachments.Contains(entity))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private void CreateLandVehicleTransportHooks()
+        {
+
+        }
+
+        private void CreateAirVehicleTransportHooks(bool singleHook = false)
+        {
+            Vehicle flyingVehicle = Util.GetVehiclePlayerIsIn();
+            
+            Entity[] nearbyEntities = World.GetNearbyEntities(flyingVehicle.Position, 32.0f);
+
+            for(int i=0; i<nearbyEntities.Length; i++)
+            {
+                Entity entity = nearbyEntities[i];
+
+                if(!CheckTransportHookPermission(entity) ||
+                    (singleHook && i > 0))
+                {
+                    continue;
+                }
+
+                Vector3 flyingVehicleHookPoint = flyingVehicle.Position + (-flyingVehicle.UpVector * 35.0f);
+
+                //const int maxDistance = 10;
+                //flyingVehicleHookPoint.X += Util.GetGlobalRandom().Next(-maxDistance, maxDistance);
+                //flyingVehicleHookPoint.Y += Util.GetGlobalRandom().Next(-maxDistance, maxDistance);
+
+                ropeHook.ropeType = TransportHooksRopeType;
+                ropeHook.entity1 = Game.Player.Character;
+
+                ropeHook.hookPoint1 = flyingVehicleHookPoint;
+
+                ropeHook.entity2 = entity;
+                ropeHook.hookPoint1 = entity.Position + (entity.UpVector * 30.0f);
+
+                CreateHook(ropeHook);
+
+                playerAttachments.Add(entity);
+            }
+        }
+
+
         private void AttachTransportHooksProc()
         {
             try
             {
                 //UI.Notify("Random -100 to 100: "+ (-100 + (Util.GetGlobalRandom().NextDouble() * 2.0f * 100)));
 
-                if (Game.Player.Character.IsAlive && Game.Player.Character.IsInFlyingVehicle)
+                if (Game.Player.Character.IsAlive && Game.Player.Character.IsSittingInVehicle())
                 {
-                    Vehicle flyingVehicle  = Util.GetVehiclePlayerIsIn();
-
-                    List<Entity> nearbyEntities = new List<Entity>(World.GetNearbyEntities(flyingVehicle.Position, 32.0f));
-
-                    foreach(Entity entity in nearbyEntities)
+                    if (Game.Player.Character.IsInFlyingVehicle)
                     {
-                        if ( entity == flyingVehicle || Util.IsPlayer(entity) ||
-                            //!Util.IsVehicle(entity) ||
-                            Util.IsProp(entity) ||
-                            (Util.IsPed(entity) && ((Ped)entity).IsSittingInVehicle()) ||
-                            playerAttachments.Contains(entity))
-                        {
-                            continue;
-                        }
-
-                        Vector3 flyingVehicleHookPoint = flyingVehicle.Position + (-flyingVehicle.UpVector * 33.0f);
-
-                        //const int maxDistance = 10;
-                        //flyingVehicleHookPoint.X += Util.GetGlobalRandom().Next(-maxDistance, maxDistance);
-                        //flyingVehicleHookPoint.Y += Util.GetGlobalRandom().Next(-maxDistance, maxDistance);
-
-                        ropeHook.ropeType = TransportHooksRopeType;
-
-                        //if (Util.IsVehicle(entity))
-                        {
-                            ropeHook.entity1 = Game.Player.Character;
-                        }
-                        //else
-                        //{
-                        //    ropeHook.entity1 = flyingVehicle;
-                        //}
-
-                        ropeHook.hookPoint1 = flyingVehicleHookPoint;
-
-                        ropeHook.entity2 = entity;
-                        ropeHook.hookPoint1 = entity.Position + (entity.UpVector * 30.0f);
-
-                        CreateHook(ropeHook);
-
-                        playerAttachments.Add(entity);
+                        CreateAirVehicleTransportHooks();
                     }
+                    
                 }
             }
             catch (Exception exc)
