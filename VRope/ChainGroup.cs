@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
-using GTA;
-using GTA.Math;
+/*
+ * 
+ * created by jeffsturm4nn
+ * 
+ */
 
 namespace VRope
 {
-    class ChainGroup
+    public class ChainGroup
     {
         public const int MAX_CHAIN_SEGMENTS = 15;
 

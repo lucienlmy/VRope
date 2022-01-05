@@ -2,6 +2,12 @@
 using System.Collections.Generic;
 using System.Windows.Forms;
 
+/*
+ * 
+ * created by jeffsturm4nn
+ * 
+ */
+
 namespace VRope
 {
     public class ControlKey

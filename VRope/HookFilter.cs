@@ -2,9 +2,15 @@
 using System;
 using System.Collections.Generic;
 
+/*
+ * 
+ * created by jeffsturm4nn
+ * 
+ */
+
 namespace VRope
 {
-    class HookFilter
+    public class HookFilter
     {
         public static readonly List<HookFilter> DefaultFilters = new List<HookFilter> {
 

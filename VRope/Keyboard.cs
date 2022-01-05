@@ -5,9 +5,15 @@ using System.Runtime.InteropServices;
 using System;
 using System.Windows.Forms;
 
+/*
+ * 
+ * created by jeffsturm4nn
+ * 
+ */
+
 namespace VRope
 {
-    static class Keyboard
+    public static class Keyboard
     {
         private const char SEPARATOR_CHAR = '+';
 

@@ -2,10 +2,15 @@
 using System;
 using System.Collections.Generic;
 
+/*
+ * 
+ * created by jeffsturm4nn
+ * 
+ */
 
 namespace VRope
 {
-    class SubtitleQueue
+    public class SubtitleQueue
     {
         private class SubtitleData
         {

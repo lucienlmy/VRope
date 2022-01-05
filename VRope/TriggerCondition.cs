@@ -1,6 +1,12 @@
 ﻿
 using System;
 
+/*
+ * 
+ * created by jeffsturm4nn
+ * 
+ */
+
 namespace VRope
 {
     [Flags]

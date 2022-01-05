@@ -2,6 +2,12 @@
 using SharpDX.XInput;
 using System;
 
+/*
+ * 
+ * created by jeffsturm4nn
+ * 
+ */
+
 namespace VRope
 {
     public class ControllerState

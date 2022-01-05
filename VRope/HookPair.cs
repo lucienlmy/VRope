@@ -2,6 +2,12 @@
 using GTA;
 using GTA.Math;
 
+/*
+ * 
+ * created by jeffsturm4nn
+ * 
+ */
+
 namespace VRope
 {
     public class HookPair
@@ -115,11 +121,9 @@ namespace VRope
 
         public bool IsValid()
         {
-            return (Exists() 
-                && entity1 != null && entity2 != null 
-                && entity1.Exists() && !isEntity2AMapPosition
-                //&& !( Util.IsPlayer(entity1) && !isEntity1APlayer )
-                && entity2.Exists());
+            return (Exists() && 
+                entity1 != null && entity1.Exists() &&
+                entity2 != null && entity2.Exists());
         }
     }
 }

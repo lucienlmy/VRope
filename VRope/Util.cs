@@ -4,9 +4,15 @@ using GTA.Native;
 using System;
 using System.Collections.Generic;
 
+/*
+ * 
+ * created by jeffsturm4nn
+ * 
+ */
+
 namespace VRope
 {
-    static class Util
+    public static class Util
     {
         private static Random globalRandom = new Random(Guid.NewGuid().GetHashCode());
 

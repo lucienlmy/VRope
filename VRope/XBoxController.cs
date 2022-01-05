@@ -1,11 +1,16 @@
 ﻿
 using System;
-using GTA;
 using SharpDX.XInput;
+
+/*
+ * 
+ * created by jeffsturm4nn
+ * 
+ */
 
 namespace VRope
 {
-    static class XBoxController
+    public static class XBoxController
     {
         private const char SEPARATOR_CHAR = '+';
 
