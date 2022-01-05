@@ -91,7 +91,8 @@ namespace VRope
         public static float BalloonUpForce;
         public static bool SolidRopes = false;
         public static bool BalloonHookMode = false;
-        public static int CurrentHookFilterIndex = 0;
+        public static int CurrentTransportHookFilterIndex = 0;
+        public static int CurrentTransportHookModeIndex = 0;
 
         public static String GetErrorMessage(Exception exc)
         {

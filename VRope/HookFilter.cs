@@ -14,13 +14,13 @@ namespace VRope
     {
         public static readonly List<HookFilter> DefaultFilters = new List<HookFilter> {
 
-            new HookFilter("[ VEHICLES ]","GTA.Vehicle"),
-            new HookFilter("[ PEDS ]","GTA.Ped"),
-            new HookFilter("[ PROPS ]","GTA.Prop"),
+            new HookFilter("[ Vehicles ]","GTA.Vehicle"),
+            new HookFilter("[ Peds ]","GTA.Ped"),
+            new HookFilter("[ Props ]","GTA.Prop"),
 
             //new HookFilter("[ VEHICLES ] & [ PEDS ]","GTA.Vehicle | GTA.Ped"),
-            new HookFilter("[ PEDS ] & [ PROPS ]","GTA.Ped | GTA.Prop"),
-            new HookFilter("[ PROPS ] & [ VEHICLES ]","GTA.Prop | GTA.Vehicle"),
+            new HookFilter("[ Peds ] & [ Props ]","GTA.Ped | GTA.Prop"),
+            new HookFilter("[ Props ] & [ Vehicles ]","GTA.Prop | GTA.Vehicle"),
 
             //new HookFilter("{ ALL }","GTA.Prop | GTA.Vehicle | GTA.Ped")
         };
