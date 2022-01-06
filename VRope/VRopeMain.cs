@@ -157,11 +157,17 @@ namespace VRope
                 (Action)(() => IncrementBalloonUpForce(true)), TriggerCondition.HELD);
 
             RegisterControlKey("AttachTransportHooksKey", settings.GetValue<String>("CONTROL_KEYBOARD", "AttachTransportHooksKey", "None"),
-                (Action)AttachTransportHooksProc, TriggerCondition.PRESSED);
+                (Action)delegate { AttachTransportHooksProc(false); }, TriggerCondition.PRESSED);
+            RegisterControlKey("AttachSingleTransportHookKey", settings.GetValue<String>("CONTROL_KEYBOARD", "AttachSingleTransportHookKey", "None"),
+                (Action)delegate { AttachTransportHooksProc(true); }, TriggerCondition.PRESSED);
+
+            RegisterControlKey("NextTransportHookModeKey", settings.GetValue<String>("CONTROL_KEYBOARD", "NextTransportHookModeKey", "None"),
+                (Action)delegate { CycleTransportHookModeProc(true); }, TriggerCondition.PRESSED);
+
             RegisterControlKey("NextTransportHookFilterKey", settings.GetValue<String>("CONTROL_KEYBOARD", "NextTransportHookFilterKey", "None"),
                 (Action)delegate { CycleTransportHookFilterProc(true); }, TriggerCondition.PRESSED);
-            RegisterControlKey("PrevTransportHookFilterKey", settings.GetValue<String>("CONTROL_KEYBOARD", "PrevTransportHookFilterKey", "None"),
-                (Action)delegate { CycleTransportHookFilterProc(false); }, TriggerCondition.PRESSED);
+            //RegisterControlKey("PrevTransportHookFilterKey", settings.GetValue<String>("CONTROL_KEYBOARD", "PrevTransportHookFilterKey", "None"),
+            //    (Action)delegate { CycleTransportHookFilterProc(false); }, TriggerCondition.PRESSED);
 
             //RegisterControlKey("CreateRopeChainKey", settings.GetValue<String>("CONTROL_KEYBOARD", "CreateRopeChainKey", "None"), 
             //    (Action)AttachEntityToEntityChainProc, TriggerCondition.PRESSED);
@@ -248,11 +254,17 @@ namespace VRope
                 (Action)MultipleObjectSelectionProc, TriggerCondition.PRESSED);
 
             RegisterControlButton("AttachTransportHooksButton", settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "AttachTransportHooksButton", "None"),
-                (Action)AttachTransportHooksProc, TriggerCondition.PRESSED);
+                (Action)delegate { AttachTransportHooksProc(false); }, TriggerCondition.PRESSED);
+            RegisterControlKey("AttachSingleTransportHookButton", settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "AttachSingleTransportHookButton", "None"),
+                (Action)delegate { AttachTransportHooksProc(true); }, TriggerCondition.PRESSED);
+
+            RegisterControlKey("NextTransportHookModeButton", settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "NextTransportHookModeButton", "None"),
+                (Action)delegate { CycleTransportHookModeProc(true); }, TriggerCondition.PRESSED);
+
             RegisterControlKey("NextTransportHookFilterButton", settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "NextTransportHookFilterButton", "None"),
                 (Action)delegate { CycleTransportHookFilterProc(true); }, TriggerCondition.PRESSED);
-            RegisterControlKey("PrevTransportHookFilterButton", settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "PrevTransportHookFilterButton", "None"),
-                (Action)delegate { CycleTransportHookFilterProc(false); }, TriggerCondition.PRESSED);
+            //RegisterControlKey("PrevTransportHookFilterButton", settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "PrevTransportHookFilterButton", "None"),
+            //    (Action)delegate { CycleTransportHookFilterProc(false); }, TriggerCondition.PRESSED);
         }
 
 
@@ -325,6 +337,8 @@ namespace VRope
                 ForceIncrementValue = settings.GetValue("FORCE_MECHANICS_VARS", "FORCE_INCREMENT_VALUE", 2.0f);
                 BalloonUpForceIncrement = settings.GetValue("FORCE_MECHANICS_VARS", "BALLOON_UP_FORCE_INCREMENT", 1.0f);
                 ContinuousForce = settings.GetValue("FORCE_MECHANICS_VARS", "CONTINUOUS_FORCE", false);
+
+                TransportEntitiesRadius = settings.GetValue("TRANSPORT_HOOKS_VARS", "TRANSPORT_ENTITIES_RADIUS", 32);
 
                 InitControlKeysFromConfig(settings);
 
@@ -407,6 +421,9 @@ namespace VRope
 
                     if (Hooks[i].isEntity1ABalloon)
                         ProcessBalloonHook(i);
+
+                    if (Hooks[i].isTransportHook)
+                        ProcessTransportHook(i);
                 }
             }
 
@@ -468,6 +485,24 @@ namespace VRope
                 balloonEntity.ApplyForce(zAxis * BalloonUpForce);
         }
 
+        public void ProcessTransportHook(int hookIndex)
+        {
+            Entity entity = Hooks[hookIndex].entity2;
+
+            if (Util.IsVehicle(entity) && !entity.IsInAir)
+            {
+                Vector3 zAxis = new Vector3(0f, 0f, 0.01f);
+
+                entity.ApplyForce(zAxis * 5.0f);
+            }
+
+            if(Util.IsPed(entity) && !entity.IsInAir)
+            {
+                Vector3 zAxis = new Vector3(0f, 0f, 0.01f);
+
+                entity.ApplyForce(zAxis * 1.0f);
+            }
+        }
 
         //public void ProcessChains()
         //{

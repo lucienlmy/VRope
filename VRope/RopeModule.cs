@@ -29,10 +29,6 @@ namespace VRope
             {
                 int indexLastHook = Hooks.Count - 1;
 
-                if (Util.IsPlayer(Hooks[indexLastHook].entity1) ||
-                    Util.IsVehiclePlayerIsIn(Hooks[indexLastHook].entity1))
-                    PlayerAttachments.Remove(Hooks[indexLastHook].entity2);
-
                 DeleteHookByIndex(indexLastHook);
             }
         }
@@ -41,10 +37,6 @@ namespace VRope
         {
             if (Hooks.Count > 0)
             {
-                if (Util.IsPlayer(Hooks[0].entity1) ||
-                    Util.IsVehiclePlayerIsIn(Hooks[0].entity1))
-                    PlayerAttachments.Remove(Hooks[0].entity2);
-
                 DeleteHookByIndex(0);
             }
         }
@@ -66,7 +58,7 @@ namespace VRope
             //    chains.RemoveAt(chains.Count - 1);
             //}
 
-            PlayerAttachments.Clear();
+            //PlayerAttachments.Clear();
 
             GC.Collect();
             GC.WaitForPendingFinalizers();
@@ -244,6 +236,27 @@ namespace VRope
             }
 
             return false;
+        }
+
+        public static bool AreEntitiesHooked(Entity entity1, Entity entity2)
+        {
+            if (entity1 == null || !entity1.Exists())
+                return false;
+            else if (entity2 == null || !entity2.Exists())
+                return false;
+
+            for (int i = 0; i < Hooks.Count; i++)
+            {
+                if (Hooks[i].entity1.Equals(entity1) && Hooks[i].entity2.Equals(entity2))
+                    return true;
+            }
+
+            return false;
+        }
+
+        public static bool IsEntityHookedToThePlayer(Entity entity)
+        {
+            return AreEntitiesHooked(Game.Player.Character, entity);
         }
 
         public static List<int> GetIndexOfHooksThatContains(Entity entity)
@@ -642,7 +655,9 @@ namespace VRope
 
                 DeleteHookByIndex(hookIndex, true);
 
-                Hooks.Add(CreateEntityHook(copyHook, true, HookPedsAtBonesCoords));
+                bool hookAtBoneCoords = (!copyHook.isTransportHook ? HookPedsAtBonesCoords : false);
+
+                Hooks.Add(CreateEntityHook(copyHook, true, hookAtBoneCoords));
             }
         }
 

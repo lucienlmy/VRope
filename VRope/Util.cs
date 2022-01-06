@@ -35,6 +35,7 @@ namespace VRope
 
         private static Bone[] PedBoneArray = (Bone[])Enum.GetValues(typeof(Bone));      
 
+
         public static Vector3 Truncate(Vector3 v)
         {
             return new Vector3((float)Math.Truncate(v.X), (float)Math.Truncate(v.Y), (float)Math.Truncate(v.Z));
@@ -93,6 +94,16 @@ namespace VRope
         public static bool IsPlayer(Entity e)
         {
             return (e != null && e == Game.Player.Character);
+        }
+
+        public static bool IsPlayerAlive()
+        {
+            return Game.Player.IsAlive;
+        }
+
+        public static bool IsPlayerSittingInFlyingVehicle()
+        {
+            return (Game.Player.Character.IsSittingInVehicle() && Game.Player.Character.IsInFlyingVehicle);
         }
 
         public static bool IsPlayer(int index)
@@ -293,6 +304,43 @@ namespace VRope
             }
 
             return false;
+        }
+    
+        public static Vector3 AsVector(float x = 0f, float y = 0f, float z = 0f)
+        {
+            return new Vector3(x, y, z);
+        }
+    
+        public static Entity GetNearestEntity(Vector3 position, float radius)
+        {
+            float shortestDistance = 0.0f;
+            Entity nearestEntity = null;
+            
+            Entity[] nearbyEntities = World.GetNearbyEntities(position, radius);
+
+            if(nearbyEntities != null && nearbyEntities.Length > 0)
+            {
+                nearestEntity = nearbyEntities[0];
+                shortestDistance = nearestEntity.Position.DistanceTo(position);
+
+                for(int i=1; i<nearbyEntities.Length; i++)
+                {
+                    Entity currentEntity = nearbyEntities[i];
+
+                    if (currentEntity == Game.Player.Character)
+                        continue;
+                    
+                    float currentDistance = currentEntity.Position.DistanceTo(position);
+
+                    if (currentDistance < shortestDistance)
+                    {
+                        shortestDistance = currentDistance;
+                        nearestEntity = currentEntity;
+                    }
+                }
+            }
+
+            return nearestEntity;
         }
     }
 }

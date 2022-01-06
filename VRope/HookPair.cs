@@ -12,11 +12,18 @@ namespace VRope
 {
     public class HookPair
     {
+        private static uint _UniqueID = 707U;
+
+
+        public uint ID { get; } = ++_UniqueID;
+
         public Rope rope;
         public RopeType ropeType;
 
         public Entity entity1;
         public Entity entity2;
+
+        public bool isTransportHook;
 
         public bool isEntity2AMapPosition;
 
@@ -61,6 +68,7 @@ namespace VRope
             this.ropeType = other.ropeType;
             this.hookOffset1 = other.hookOffset1;
             this.hookOffset2 = other.hookOffset2;
+            this.isTransportHook = other.isTransportHook;
         }
 
         public bool Equals(HookPair other)
@@ -70,6 +78,7 @@ namespace VRope
 
            return (this.isEntity2AMapPosition == other.isEntity2AMapPosition &&
                 this.isEntity1ABalloon == other.isEntity1ABalloon &&
+                this.isTransportHook == other.isTransportHook &&
                 this.entity1 == other.entity1 &&
                 this.entity2 == other.entity2 &&
                 Util.Truncate(this.hookPoint1) == Util.Truncate(other.hookPoint1) &&
@@ -94,6 +103,7 @@ namespace VRope
             this.hookOffset2 = Vector3.Zero;
             this.rope = null;
             this.ropeType = (RopeType)4;
+            this.isTransportHook = false;
         }
 
         public void Delete()
@@ -117,6 +127,36 @@ namespace VRope
         public bool Exists()
         {
             return (rope != null && rope.Exists());
+        }
+
+        public void CalculateOffset1()
+        {
+            if (entity1 == null || !entity1.Exists())
+                return;
+
+            if(hookPoint1 != Vector3.Zero)
+            {
+                hookOffset1 = hookPoint1 - entity1.Position;
+            }
+            else
+            {
+                hookOffset1 = Vector3.Zero;
+            }
+        }
+
+        public void CalculateOffset2()
+        {
+            if (entity2 == null || !entity2.Exists())
+                return;
+
+            if (hookPoint2 != Vector3.Zero)
+            {
+                hookOffset2 = hookPoint2 - entity2.Position;
+            }
+            else
+            {
+                hookOffset2 = Vector3.Zero;
+            }
         }
 
         public bool IsValid()

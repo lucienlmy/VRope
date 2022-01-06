@@ -45,12 +45,14 @@ namespace VRope
 
         public const int MAX_SELECTED_HOOKS = 30;
         public const int INIT_HOOK_LIST_CAPACITY = 150;
-        public const float MAX_HOOKED_PED_SPEED = 0.5f;
+        //public const float MAX_HOOKED_PED_SPEED = 0.5f;
         public const int PED_RAGDOLL_DURATION = 60000;
         public const char SEPARATOR_CHAR = '+';
 
         public const float MAX_MIN_ROPE_LENGTH = 1000f;
-        public const float MIN_MIN_ROPE_LENGTH = 0.5f;
+        public const float MIN_MIN_ROPE_LENGTH = 0.4f;
+
+        public const float TRANSPORTED_ENTITY_UPVECTOR_MULT = 0.40f;
 
         public static SubtitleQueue SubQueue = new SubtitleQueue();
 
@@ -76,8 +78,6 @@ namespace VRope
 
         public static List<HookPair> SelectedHooks = new List<HookPair>(50);
 
-        public static List<Entity> PlayerAttachments = new List<Entity>(100);
-
         public static List<ControlKey> ControlKeys = new List<ControlKey>(30);
         public static List<ControlButton> ControlButtons = new List<ControlButton>(30);
 
@@ -93,6 +93,7 @@ namespace VRope
         public static bool BalloonHookMode = false;
         public static int CurrentTransportHookFilterIndex = 0;
         public static int CurrentTransportHookModeIndex = 0;
+        public static int TransportEntitiesRadius;
 
         public static String GetErrorMessage(Exception exc)
         {
