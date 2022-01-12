@@ -22,6 +22,11 @@ namespace VRope
             this.first = first;
             this.second = second;
         }
+
+        public override string ToString()
+        {
+            return ("[" + first.ToString() + "][" + second.ToString() + "]");
+        }
     }
 
     static class Pair

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using GTA;
 
 /*
@@ -18,7 +19,7 @@ namespace VRope
         public const int VERSION_BUILD = 12;
         public const String VERSION_SUFFIX = "a DevBuild";
 
-        public const int UPDATE_INTERVAL = 11; //milliseconds.
+        public const int UPDATE_INTERVAL = 12; //milliseconds.
         public const int UPDATE_FPS = (1000 / UPDATE_INTERVAL);
 
         public static bool EnableXBoxControllerInput;
@@ -44,15 +45,13 @@ namespace VRope
         //public const float CHAIN_JOINT_PROP_MASS = 10.0f;
 
         public const int MAX_SELECTED_HOOKS = 30;
-        public const int INIT_HOOK_LIST_CAPACITY = 150;
+        public const int INIT_HOOK_LIST_CAPACITY = 100;
         //public const float MAX_HOOKED_PED_SPEED = 0.5f;
-        public const int PED_RAGDOLL_DURATION = 60000;
+        public const int PED_RAGDOLL_DURATION = 10000; //TODO: Change to 60k on Release
         public const char SEPARATOR_CHAR = '+';
 
-        public const float MAX_MIN_ROPE_LENGTH = 1000f;
+        public const float MAX_MIN_ROPE_LENGTH = 100f;
         public const float MIN_MIN_ROPE_LENGTH = 0.4f;
-
-        public const float TRANSPORTED_ENTITY_UPVECTOR_MULT = 0.40f;
 
         public static SubtitleQueue SubQueue = new SubtitleQueue();
 
@@ -92,14 +91,19 @@ namespace VRope
         public static bool SolidRopes = false;
         public static bool BalloonHookMode = false;
         public static int CurrentTransportHookFilterIndex = 0;
-        public static int CurrentTransportHookModeIndex = 0;
+        public static int CurrentTransportHookModeIndex = 1;
         public static int TransportEntitiesRadius;
+
+        //public static Stopwatch Watch = new Stopwatch();
 
         public static String GetErrorMessage(Exception exc)
         {
             return (DebugMode ? exc.ToString() : exc.Message);
         }
-
+        public static String GetErrorMessage(Exception exc, String extraDebugInfo)
+        {
+            return (DebugMode ? (exc.ToString() + "\n" + extraDebugInfo)  : exc.Message);
+        }
 
         public static bool CanUseModFeatures()
         {

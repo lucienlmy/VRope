@@ -108,7 +108,8 @@ namespace VRope
 
 
 
-        public static HookPair CreateEntityHook(HookPair hook, bool copyHook = true, bool hookAtBonePositions = true, float minRopeLength = MIN_MIN_ROPE_LENGTH)
+        public static HookPair CreateEntityHook(HookPair hook, bool copyHook = true, bool hookAtBonePositions = true, 
+                                                float minRopeLength = MIN_MIN_ROPE_LENGTH, float customRopeLength = 0.0f)
         {
             try
             {
@@ -129,19 +130,26 @@ namespace VRope
                     entity2HookPosition = hook.entity2.Position + hook.hookOffset2;
                 }
 
+
                 if (Util.IsPed(hook.entity1) && !Util.IsPlayer(hook.entity1))
                 {
                     if (hookAtBonePositions)
                         entity1HookPosition = Util.GetNearestBonePosition((Ped)hook.entity1, entity1HookPosition);
+
+                    Util.MakePedRagdoll((Ped)hook.entity1, PED_RAGDOLL_DURATION);
                 }
+
 
                 if (Util.IsPed(hook.entity2))
                 {
                     if (hookAtBonePositions)
                         entity2HookPosition = Util.GetNearestBonePosition((Ped)hook.entity2, entity2HookPosition);
+
+                    Util.MakePedRagdoll((Ped)hook.entity2, PED_RAGDOLL_DURATION);
                 }
 
-                float ropeLength = entity1HookPosition.DistanceTo(entity2HookPosition); //TRY1
+
+                float ropeLength = (customRopeLength > 0.0f ? customRopeLength : entity1HookPosition.DistanceTo(entity2HookPosition)); //TRY1
 
                 if (ropeLength < minRopeLength)
                     ropeLength = minRopeLength;
@@ -174,16 +182,17 @@ namespace VRope
             }
         }
 
-        public static void CreateHook(HookPair source, bool copyHook = true)
+        public static void CreateHook(HookPair source, bool copyHook = true, float minRopeLength = MIN_MIN_ROPE_LENGTH, float customRopeLength = 0.0f)
         {
             if (!CheckHookPermission(source))
                 return;
 
-            HookPair resultHook = CreateEntityHook(source, copyHook, HookPedsAtBonesCoords);
+            HookPair resultHook = CreateEntityHook(source, copyHook, HookPedsAtBonesCoords, minRopeLength, customRopeLength);
 
             if (resultHook != null)
                 Hooks.Add(resultHook);
         }
+
 
         public static bool CheckHookPermission(HookPair hook)
         {
@@ -207,7 +216,6 @@ namespace VRope
 
             return true;
         }
-
 
 
         public static Prop CreateTargetProp(Vector3 position, bool isDynamic, bool hasCollision, bool isVisible, bool hasFrozenPosition, bool placeOnGround)
@@ -254,10 +262,16 @@ namespace VRope
             return false;
         }
 
-        public static bool IsEntityHookedToThePlayer(Entity entity)
+        public static bool IsEntityHookedToPlayer(Entity entity)
         {
             return AreEntitiesHooked(Game.Player.Character, entity);
         }
+
+        public static bool IsEntityHookedToPlayersVehicle(Entity entity)
+        {
+            return AreEntitiesHooked(Util.GetVehiclePlayerIsIn(), entity);
+        }
+
 
         public static List<int> GetIndexOfHooksThatContains(Entity entity)
         {

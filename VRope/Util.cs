@@ -56,6 +56,19 @@ namespace VRope
             return Function.Call<bool>(Hash.IS_ENTITY_A_PED, index);
         }
 
+        public static Vector3 GetEntityDimensions(Entity entity)
+        {
+            if (entity == null || !entity.Exists())
+                return Vector3.Zero;
+
+            Vector3 minDimension = new Vector3();
+            Vector3 maxDimension = new Vector3();
+
+            entity.Model.GetDimensions(out minDimension, out maxDimension);
+
+            return (maxDimension - minDimension);
+        }
+
         public static bool IsPedSittingInAVehicle(int index)
         {
             return Function.Call<bool>(Hash.IS_PED_SITTING_IN_ANY_VEHICLE, index);
@@ -244,7 +257,7 @@ namespace VRope
             //Vector3 multiplied = new Vector3(directionVec.X * 100.0f, directionVec.Y * 100.0f, directionVec.Z * 100.0f);
 
             //RaycastResult rayResult = World.RaycastCapsule(cameraPosition, cameraPosition + (multiplied * 1000f), 0.5f, IntersectOptions.Everything);
-
+            
             RaycastResult rayResult = World.GetCrosshairCoordinates();
 
             return rayResult;

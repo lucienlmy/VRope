@@ -71,6 +71,11 @@ namespace VRope
             this.isTransportHook = other.isTransportHook;
         }
 
+        public HookPair Clone()
+        {
+            return new HookPair(this);
+        }
+
         public bool Equals(HookPair other)
         {
             if (other == null)
