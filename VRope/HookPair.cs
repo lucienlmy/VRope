@@ -33,8 +33,6 @@ namespace VRope
         public bool isWinding;
         public bool isUnwinding;
 
-        //public bool isRopeDetachedFromPed;
-
         public Vector3 hookPoint1;
         public Vector3 hookPoint2;
 

@@ -108,8 +108,8 @@ namespace VRope
 
 
 
-        public static HookPair CreateEntityHook(HookPair hook, bool copyHook = true, bool hookAtBonePositions = true, 
-                                                float minRopeLength = MIN_MIN_ROPE_LENGTH, float customRopeLength = 0.0f)
+        public static HookPair CreateEntityHook(HookPair hook, bool copyHook = true, bool hookAtBonePositions = true,
+                                                float minRopeLength = MIN_ROPE_LENGTH, float customRopeLength = 0.0f)
         {
             try
             {
@@ -159,6 +159,7 @@ namespace VRope
 
                 hook.rope.AttachEntities(hook.entity1, entity1HookPosition, hook.entity2, entity2HookPosition, ropeLength);
 
+
                 if (Util.IsVehicle(hook.entity1))
                     hook.entity1.ApplyForce(new Vector3(0, 1, 0));
 
@@ -177,12 +178,12 @@ namespace VRope
             }
             catch (Exception exc)
             {
-                UI.Notify("VRope CreateEntityHook() Error:\n" + GetErrorMessage(exc));
+                UI.Notify("VRope CreateEntityHook Error:\n" + GetErrorMessage(exc));
                 return hook;
             }
         }
 
-        public static void CreateHook(HookPair source, bool copyHook = true, float minRopeLength = MIN_MIN_ROPE_LENGTH, float customRopeLength = 0.0f)
+        public static void CreateHook(HookPair source, bool copyHook = true, float minRopeLength = MIN_ROPE_LENGTH, float customRopeLength = 0.0f)
         {
             if (!CheckHookPermission(source))
                 return;
@@ -314,17 +315,31 @@ namespace VRope
 
         public static void SetHookRopeWinding(HookPair hook, bool winding)
         {
-            if (hook != null && hook.Exists())
+            if (hook != null && hook.IsValid())
             {
+                hook.rope.Length -= RopeWindingSpeed;
+
                 if (!hook.isWinding && winding)
                 {
                     Function.Call(Hash.START_ROPE_WINDING, hook.rope);
-                    hook.isWinding = true;
+
+                    //if (hook.rope.Length + RopeWindingSpeed > MIN_ROPE_LENGTH)
+                    {
+                        
+                    }
+                    //else
+                    //{
+                    //    hook.rope.Length = MIN_ROPE_LENGTH;
+                    //}
+
+                    hook.isWinding = winding;
+
+                    //hook.isUnwinding = false;
                 }
                 else if (hook.isWinding && !winding)
                 {
                     Function.Call(Hash.STOP_ROPE_WINDING, hook.rope);
-                    hook.rope.ResetLength(true);
+                    //hook.rope.ResetLength(true);
                     hook.isWinding = false;
                 }
             }
@@ -334,40 +349,51 @@ namespace VRope
         {
             if (index >= 0 && index < Hooks.Count)
             {
-                //SetHookRopeWinding(hooks[index], winding);
+                SetHookRopeWinding(Hooks[index], winding);
 
-                if (Hooks[index] != null && Hooks[index].Exists())
-                {
-                    if (!Hooks[index].isWinding && winding)
-                    {
-                        Function.Call(Hash.START_ROPE_WINDING, Hooks[index].rope);
-                        Hooks[index].isWinding = true;
-                    }
-                    else if (Hooks[index].isWinding && !winding)
-                    {
-                        Function.Call(Hash.STOP_ROPE_WINDING, Hooks[index].rope);
-                        Hooks[index].rope.ResetLength(true);
-                        Hooks[index].isWinding = false;
-                    }
-                }
+                //if (Hooks[index] != null && Hooks[index].Exists())
+                //{
+                //    if (!Hooks[index].isWinding && winding)
+                //    {
+                //        Function.Call(Hash.START_ROPE_WINDING, Hooks[index].rope);
+                //        Hooks[index].isWinding = true;
+                //    }
+                //    else if (Hooks[index].isWinding && !winding)
+                //    {
+                //        Function.Call(Hash.STOP_ROPE_WINDING, Hooks[index].rope);
+                //        Hooks[index].rope.ResetLength(true);
+                //        Hooks[index].isWinding = false;
+                //    }
+                //}
             }
         }
 
         public static void SetHookRopeUnwinding(HookPair hook, bool unwinding)
         {
-            if (hook != null && hook.Exists())
+            if (hook != null && hook.IsValid())
             {
-                if (!hook.isUnwinding && unwinding)
-                {
-                    Function.Call(Hash.START_ROPE_UNWINDING_FRONT, hook.rope);
-                    hook.isUnwinding = true;
-                }
-                else if (hook.isUnwinding && !unwinding)
-                {
-                    Function.Call(Hash.STOP_ROPE_UNWINDING_FRONT, hook.rope);
-                    hook.rope.ResetLength(true);
-                    hook.isUnwinding = false;
-                }
+                //if (!hook.isUnwinding && unwinding)
+                //{
+                //    //Function.Call(Hash.START_ROPE_UNWINDING_FRONT, hook.rope);
+                //    if (hook.rope.Length - RopeWindingSpeed < MAX_ROPE_LENGTH)
+                //    {
+                //        hook.rope.Length += RopeWindingSpeed;
+                //    }
+                //    else
+                //    {
+                //        hook.rope.Length = MAX_ROPE_LENGTH;
+                //    }
+
+                //    hook.isUnwinding = true;
+                //}
+                //else if (hook.isUnwinding && !unwinding)
+                //{
+                //Function.Call(Hash.STOP_ROPE_UNWINDING_FRONT, hook.rope);
+                //hook.rope.ResetLength(true);
+                hook.isUnwinding = unwinding;
+
+                hook.isWinding = false;
+                // }
             }
         }
 
@@ -375,24 +401,25 @@ namespace VRope
         {
             if (index >= 0 && index < Hooks.Count)
             {
-                //SetHookRopeUnwinding(hooks[index], unwinding);
+                SetHookRopeUnwinding(Hooks[index], unwinding);
 
-                if (Hooks[index] != null && Hooks[index].Exists())
-                {
-                    if (!Hooks[index].isUnwinding && unwinding)
-                    {
-                        Function.Call(Hash.START_ROPE_UNWINDING_FRONT, Hooks[index].rope);
-                        Hooks[index].isUnwinding = true;
-                    }
-                    else if (Hooks[index].isUnwinding && !unwinding)
-                    {
-                        Function.Call(Hash.STOP_ROPE_UNWINDING_FRONT, Hooks[index].rope);
-                        Hooks[index].rope.ResetLength(true);
-                        Hooks[index].isUnwinding = false;
-                    }
-                }
+                //if (Hooks[index] != null && Hooks[index].Exists())
+                //{
+                //    if (!Hooks[index].isUnwinding && unwinding)
+                //    {
+                //        Function.Call(Hash.START_ROPE_UNWINDING_FRONT, Hooks[index].rope);
+                //        Hooks[index].isUnwinding = true;
+                //    }
+                //    else if (Hooks[index].isUnwinding && !unwinding)
+                //    {
+                //        Function.Call(Hash.STOP_ROPE_UNWINDING_FRONT, Hooks[index].rope);
+                //        Hooks[index].rope.ResetLength(true);
+                //        Hooks[index].isUnwinding = false;
+                //    }
+                //}
             }
         }
+
 
         public static void SetLastHookRopeWindingProc(bool winding)
         {
@@ -430,6 +457,7 @@ namespace VRope
             }
         }
 
+
         public static void ToggleSolidRopesProc()
         {
             SolidRopes = !SolidRopes;
@@ -437,21 +465,22 @@ namespace VRope
             SubQueue.AddSubtitle("VRope Solid Ropes: " + (SolidRopes ? "[ON]" : "(OFF)"), 24);
         }
 
-        public static void IncrementMinRopeLength(bool negativeIncrement = false, bool halfIncrement = false)
-        {
-            float lengthIncrement = (halfIncrement ? 0.5f : 1.0f);
 
-            if (!negativeIncrement && MinRopeLength < MAX_MIN_ROPE_LENGTH)
-            {
-                MinRopeLength += lengthIncrement;
-            }
-            else if (negativeIncrement && MinRopeLength > (MIN_MIN_ROPE_LENGTH + lengthIncrement))
-            {
-                MinRopeLength -= lengthIncrement;
-            }
+        //public static void IncrementMIN_ROPE_LENGTH(bool negativeIncrement = false, bool halfIncrement = false)
+        //{
+        //    float lengthIncrement = (halfIncrement ? 0.5f : 1.0f);
 
-            SubQueue.AddSubtitle(166, "VRope Minimum Rope Length: " + MinRopeLength.ToString("0.00"), 17);
-        }
+        //    if (!negativeIncrement && MIN_ROPE_LENGTH < MAX_MIN_ROPE_LENGTH)
+        //    {
+        //        MIN_ROPE_LENGTH += lengthIncrement;
+        //    }
+        //    else if (negativeIncrement && MIN_ROPE_LENGTH > (MIN_MIN_ROPE_LENGTH + lengthIncrement))
+        //    {
+        //        MIN_ROPE_LENGTH -= lengthIncrement;
+        //    }
+
+        //    SubQueue.AddSubtitle(166, "VRope Minimum Rope Length: " + MIN_ROPE_LENGTH.ToString("0.00"), 17);
+        //}
 
 
         public static void MultipleObjectSelectionProc()

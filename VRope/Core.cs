@@ -16,7 +16,7 @@ namespace VRope
         public const String MOD_NAME = "VRope";
         public const String MOD_DEVELOPER = "jeffsturm4nn"; // :D
         public const int VERSION_MINOR = 0;
-        public const int VERSION_BUILD = 12;
+        public const int VERSION_BUILD = 10;
         public const String VERSION_SUFFIX = "a DevBuild";
 
         public const int UPDATE_INTERVAL = 12; //milliseconds.
@@ -46,12 +46,14 @@ namespace VRope
 
         public const int MAX_SELECTED_HOOKS = 30;
         public const int INIT_HOOK_LIST_CAPACITY = 100;
-        //public const float MAX_HOOKED_PED_SPEED = 0.5f;
         public const int PED_RAGDOLL_DURATION = 10000; //TODO: Change to 60k on Release
         public const char SEPARATOR_CHAR = '+';
 
-        public const float MAX_MIN_ROPE_LENGTH = 100f;
-        public const float MIN_MIN_ROPE_LENGTH = 0.4f;
+        public const float MIN_ROPE_LENGTH = 0.5f;
+        public const float MAX_ROPE_LENGTH = 80.0f;
+
+        //public const float MAX_MIN_ROPE_LENGTH = 100f;
+        //public const float MIN_MIN_ROPE_LENGTH = MIN_ROPE_LENGTH;
 
         public static SubtitleQueue SubQueue = new SubtitleQueue();
 
@@ -85,7 +87,7 @@ namespace VRope
         public static RopeType TransportHooksRopeType;
         //public static RopeType ChainSegmentRopeType;
 
-        public static float MinRopeLength;
+        public static float RopeWindingSpeed = 0.5f;
         public static float ForceMagnitude;
         public static float BalloonUpForce;
         public static bool SolidRopes = false;

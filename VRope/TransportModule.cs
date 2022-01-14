@@ -292,8 +292,9 @@ namespace VRope
             float rope2Length = (hook2.entity1.Position + hook1.hookOffset1).DistanceTo(hook2.entity2.Position + hook1.hookOffset2);
             float greatestRopeLength = Math.Max(rope1Length, rope2Length);
 
-            RopeModule.CreateHook(hook1, false, MIN_MIN_ROPE_LENGTH, greatestRopeLength);
-            RopeModule.CreateHook(hook2, false, MIN_MIN_ROPE_LENGTH, greatestRopeLength);
+
+            RopeModule.CreateHook(hook1, false, MIN_ROPE_LENGTH, greatestRopeLength);
+            RopeModule.CreateHook(hook2, false, MIN_ROPE_LENGTH, greatestRopeLength);
         }
     }
 }
