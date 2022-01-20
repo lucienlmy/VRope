@@ -64,12 +64,21 @@ namespace VRope
             GC.WaitForPendingFinalizers();
         }
 
+
         public static void DeleteHookByIndex(int hookIndex, bool removeFromHooks = true)
         {
             if (hookIndex >= 0 && hookIndex < Hooks.Count)
             {
                 if (Hooks[hookIndex] != null)
                 {
+                    if (Hooks[hookIndex].HasNPCPed())
+                    {
+                        HookedPedCount--;
+
+                        if (HookedPedCount < 0)
+                            HookedPedCount = 0;
+                    }
+
                     Hooks[hookIndex].Delete();
                     Hooks[hookIndex] = null;
                 }
@@ -89,33 +98,39 @@ namespace VRope
             }
         }
 
-        public static void DeleteHook(HookPair hook, bool removeFromHooks = true)
-        {
-            if (hook != null)
-            {
-                hook.Delete();
-                hook = null;
-            }
+        //public static void DeleteHook(HookPair hook, bool removeFromHooks = true)
+        //{
+        //    if (hook != null)
+        //    {
+        //        hook.Delete();
+        //        hook = null;
+        //    }
 
-            else
-            {
-                UI.Notify("DeleteHookByIndex(): Attempted to delete NULL hook.");
-            }
+        //    else
+        //    {
+        //        UI.Notify("DeleteHook(): Attempted to delete NULL hook.");
+        //    }
 
-            if (removeFromHooks)
-                Hooks.Remove(hook);
-        }
+        //    if (removeFromHooks)
+        //        Hooks.Remove(hook);
+        //}
 
 
 
         public static HookPair CreateEntityHook(HookPair hook, bool copyHook = true, bool hookAtBonePositions = true,
-                                                float minRopeLength = MIN_ROPE_LENGTH, float customRopeLength = 0.0f)
+                                                float minRopeLength = MIN_MIN_ROPE_LENGTH, float customRopeLength = 0.0f)
         {
             try
             {
                 if (hook.entity1 == null ||
                     (hook.entity2 == null && !hook.isEntity2AMapPosition))
                     return null;
+
+                if (hook.HasNPCPed())
+                {
+                    if (HookedPedCount >= MAX_HOOKED_PEDS)
+                        return null;
+                }
 
                 Vector3 entity1HookPosition = hook.entity1.Position + hook.hookOffset1;
                 Vector3 entity2HookPosition = Vector3.Zero;
@@ -168,8 +183,8 @@ namespace VRope
 
                 hook.isEntity1ABalloon = BalloonHookMode;
 
-                //UI.Notify("Hook Created. E1 Null: " + (hook.entity1 == null ? "true" : "false") + "| E2 Null: " +
-                //    (hook.entity2 == null ? "true" : "false") + "Valid: " + hook.IsValid());
+                if (hook.HasNPCPed())
+                    HookedPedCount++;
 
                 if (copyHook)
                     return new HookPair(hook);
@@ -183,14 +198,14 @@ namespace VRope
             }
         }
 
-        public static void CreateHook(HookPair source, bool copyHook = true, float minRopeLength = MIN_ROPE_LENGTH, float customRopeLength = 0.0f)
+        public static void CreateHook(HookPair source, bool copyHook = true, float minRopeLength = MIN_MIN_ROPE_LENGTH, float customRopeLength = 0.0f)
         {
             if (!CheckHookPermission(source))
                 return;
 
             HookPair resultHook = CreateEntityHook(source, copyHook, HookPedsAtBonesCoords, minRopeLength, customRopeLength);
 
-            if (resultHook != null)
+            if (resultHook != null && resultHook.IsValid())
                 Hooks.Add(resultHook);
         }
 
@@ -205,13 +220,15 @@ namespace VRope
 
             if (Util.IsPed(hook.entity1) && !Util.IsPlayer(hook.entity1))
             {
-                if (((Ped)hook.entity1).IsDead || Util.IsPed(hook.entity2) || IsEntityHooked(hook.entity1))
+                if (HookedPedCount >= MAX_HOOKED_PEDS || 
+                    ((Ped)hook.entity1).IsDead || Util.IsPed(hook.entity2) || IsEntityHooked(hook.entity1))
                     return false;
             }
 
             if (Util.IsPed(hook.entity2))
             {
-                if (((Ped)hook.entity2).IsDead || IsEntityHooked(hook.entity2))
+                if (HookedPedCount >= MAX_HOOKED_PEDS || 
+                    ((Ped)hook.entity2).IsDead || IsEntityHooked(hook.entity2))
                     return false;
             }
 
@@ -317,30 +334,31 @@ namespace VRope
         {
             if (hook != null && hook.IsValid())
             {
-                hook.rope.Length -= RopeWindingSpeed;
-
-                if (!hook.isWinding && winding)
+                if (!hook.isWinding && winding && hook.rope.Length > MinRopeLength)
                 {
                     Function.Call(Hash.START_ROPE_WINDING, hook.rope);
-
-                    //if (hook.rope.Length + RopeWindingSpeed > MIN_ROPE_LENGTH)
-                    {
-                        
-                    }
-                    //else
-                    //{
-                    //    hook.rope.Length = MIN_ROPE_LENGTH;
-                    //}
-
-                    hook.isWinding = winding;
+                    hook.isWinding = true;
 
                     //hook.isUnwinding = false;
                 }
                 else if (hook.isWinding && !winding)
                 {
                     Function.Call(Hash.STOP_ROPE_WINDING, hook.rope);
-                    //hook.rope.ResetLength(true);
                     hook.isWinding = false;
+                }
+
+                if (hook.isWinding && RopeWindingSpeed > 0.0f)
+                {
+                    if (hook.rope.Length - RopeWindingSpeed > MinRopeLength)
+                    {
+                        hook.rope.Length -= RopeWindingSpeed * Game.LastFrameTime * 100.0f;// * Game.GameTime;
+                    } 
+                    else
+                    {
+                        hook.rope.Length = MinRopeLength;
+                        Function.Call(Hash.STOP_ROPE_WINDING, hook.rope);
+                        hook.isWinding = false;
+                    }
                 }
             }
         }
@@ -372,28 +390,30 @@ namespace VRope
         {
             if (hook != null && hook.IsValid())
             {
-                //if (!hook.isUnwinding && unwinding)
-                //{
-                //    //Function.Call(Hash.START_ROPE_UNWINDING_FRONT, hook.rope);
-                //    if (hook.rope.Length - RopeWindingSpeed < MAX_ROPE_LENGTH)
-                //    {
-                //        hook.rope.Length += RopeWindingSpeed;
-                //    }
-                //    else
-                //    {
-                //        hook.rope.Length = MAX_ROPE_LENGTH;
-                //    }
+                if (!hook.isUnwinding && unwinding && hook.rope.Length < MaxRopeLength)
+                {
+                    Function.Call(Hash.START_ROPE_UNWINDING_FRONT, hook.rope);
+                    hook.isUnwinding = true;
+                }
+                else if (hook.isUnwinding && !unwinding)
+                {
+                    Function.Call(Hash.STOP_ROPE_UNWINDING_FRONT, hook.rope);
+                    hook.isUnwinding = false;
+                }
 
-                //    hook.isUnwinding = true;
-                //}
-                //else if (hook.isUnwinding && !unwinding)
-                //{
-                //Function.Call(Hash.STOP_ROPE_UNWINDING_FRONT, hook.rope);
-                //hook.rope.ResetLength(true);
-                hook.isUnwinding = unwinding;
-
-                hook.isWinding = false;
-                // }
+                if (hook.isUnwinding && RopeWindingSpeed > 0.0f)
+                {
+                    if(hook.rope.Length + RopeWindingSpeed < MaxRopeLength)
+                    {
+                        hook.rope.Length += RopeWindingSpeed * Game.LastFrameTime * 100.0f;
+                    }
+                    else
+                    {
+                        hook.rope.Length = MaxRopeLength;
+                        Function.Call(Hash.STOP_ROPE_UNWINDING_FRONT, hook.rope);
+                        hook.isUnwinding = false;
+                    }
+                }
             }
         }
 
@@ -458,15 +478,15 @@ namespace VRope
         }
 
 
-        public static void ToggleSolidRopesProc()
-        {
-            SolidRopes = !SolidRopes;
+        //public static void ToggleSolidRopesProc()
+        //{
+        //    SolidRopes = !SolidRopes;
 
-            SubQueue.AddSubtitle("VRope Solid Ropes: " + (SolidRopes ? "[ON]" : "(OFF)"), 24);
-        }
+        //    SubQueue.AddSubtitle("VRope Solid Ropes: " + (SolidRopes ? "[ON]" : "(OFF)"), 24);
+        //}
 
 
-        //public static void IncrementMIN_ROPE_LENGTH(bool negativeIncrement = false, bool halfIncrement = false)
+        //public static void IncrementMinRopeLength(bool negativeIncrement = false, bool halfIncrement = false)
         //{
         //    float lengthIncrement = (halfIncrement ? 0.5f : 1.0f);
 
@@ -538,7 +558,7 @@ namespace VRope
                         if (FreeRangeMode ||
                             RopeHook.entity1.Position.DistanceTo(RopeHook.hookPoint2) < MaxHookCreationDistance)
                         {
-                            CreateHook(RopeHook);
+                            CreateHook(RopeHook, true, MinRopeLength);
                         }
 
                         RopeHook.entity1 = null;
@@ -586,7 +606,7 @@ namespace VRope
                     else continue;
 
                     //if (!chainRope)
-                    CreateHook(hook, true);
+                    CreateHook(hook, true, MinRopeLength);
                     //else
                     //    CreateRopeChain(hook, true);
                 }
@@ -631,7 +651,7 @@ namespace VRope
                         RopeHook.isEntity2AMapPosition = false;
 
                         //if (!chainRope)
-                        CreateHook(RopeHook, true);
+                        CreateHook(RopeHook, true, MinRopeLength);
                         //else
                         //    CreateRopeChain(ropeHook, false);
                     }
@@ -652,7 +672,7 @@ namespace VRope
                     RopeHook.hookOffset2 = Vector3.Zero;
 
                     //if (!chainRope)
-                    CreateHook(RopeHook, true);
+                    CreateHook(RopeHook, true, MinRopeLength);
                     //else
                     //    CreateRopeChain(ropeHook, true);
                 }
@@ -687,6 +707,7 @@ namespace VRope
             }
         }
 
+
         public static void RecreateEntityHook(int hookIndex)
         {
             if (hookIndex >= 0 && hookIndex < Hooks.Count)
@@ -700,7 +721,7 @@ namespace VRope
 
                 bool hookAtBoneCoords = (!copyHook.isTransportHook ? HookPedsAtBonesCoords : false);
 
-                Hooks.Add(CreateEntityHook(copyHook, true, hookAtBoneCoords));
+                Hooks.Add(CreateEntityHook(copyHook, true, hookAtBoneCoords, MinRopeLength));
             }
         }
 

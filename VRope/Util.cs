@@ -56,6 +56,7 @@ namespace VRope
             return Function.Call<bool>(Hash.IS_ENTITY_A_PED, index);
         }
 
+
         public static Vector3 GetEntityDimensions(Entity entity)
         {
             if (entity == null || !entity.Exists())
@@ -186,6 +187,12 @@ namespace VRope
                 }
             }
         }
+
+        //public static bool IsEntityAfterAnother(Entity entity1, Entity entity2)
+        //{
+        //    Vector3 entity1Dimensions = entity1.Model.GetDimensions();
+        //    Vector3 positionEntity1 = (entity1.ForwardVector) * entity1.Position; 
+        //}
 
         public static Vector3 GetNearestBonePosition(Ped ped, Vector3 hitPosition)
         {

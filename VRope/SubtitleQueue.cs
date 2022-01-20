@@ -52,6 +52,8 @@ namespace VRope
             if (blocked || subtitle == null || subtitle.Length == 0 || durationMs < 1)
                 return;
 
+            durationMs /= Core.UPDATE_INTERVAL;
+
             SubtitleData subData = GetSubtitle(index);
 
             if (subData == null)

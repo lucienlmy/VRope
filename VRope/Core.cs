@@ -16,11 +16,11 @@ namespace VRope
         public const String MOD_NAME = "VRope";
         public const String MOD_DEVELOPER = "jeffsturm4nn"; // :D
         public const int VERSION_MINOR = 0;
-        public const int VERSION_BUILD = 10;
-        public const String VERSION_SUFFIX = "a DevBuild";
+        public const int VERSION_BUILD = 13;
+        public const String VERSION_SUFFIX = "a {DevBuild}";
 
-        public const int UPDATE_INTERVAL = 12; //milliseconds.
-        public const int UPDATE_FPS = (1000 / UPDATE_INTERVAL);
+        public const int UPDATE_INTERVAL = 10; //milliseconds.
+        public const int UPDATE_FPS = (1000 / UPDATE_INTERVAL); //100 FPS
 
         public static bool EnableXBoxControllerInput;
         public static bool FreeRangeMode;
@@ -30,7 +30,7 @@ namespace VRope
         public static float MaxHookedPedDistance;
 
         public static bool ShowHookRopeProp = true;
-        public static bool HookPedsAtBonesCoords = true;
+        public static bool HookPedsAtBonesCoords = false;
 
         public static bool ContinuousForce;
         public static float ForceIncrementValue;
@@ -44,13 +44,17 @@ namespace VRope
         //public static float CHAIN_JOINT_OFFSET = 0.3f;    
         //public const float CHAIN_JOINT_PROP_MASS = 10.0f;
 
+        public const int MAX_HOOKED_PEDS = 3; // RAGE/Euphoria limit. Attaching 4 or more Peds will crash the game.
+
         public const int MAX_SELECTED_HOOKS = 30;
         public const int INIT_HOOK_LIST_CAPACITY = 100;
-        public const int PED_RAGDOLL_DURATION = 10000; //TODO: Change to 60k on Release
+        public const int PED_RAGDOLL_DURATION = 60000; //TODO: Change to 60k on Release
         public const char SEPARATOR_CHAR = '+';
 
-        public const float MIN_ROPE_LENGTH = 0.5f;
-        public const float MAX_ROPE_LENGTH = 80.0f;
+        public const float MIN_MIN_ROPE_LENGTH = 0.5f;
+
+        public static float MinRopeLength = MIN_MIN_ROPE_LENGTH;
+        public static float MaxRopeLength = 80.0f;
 
         //public const float MAX_MIN_ROPE_LENGTH = 100f;
         //public const float MIN_MIN_ROPE_LENGTH = MIN_ROPE_LENGTH;
@@ -87,14 +91,18 @@ namespace VRope
         public static RopeType TransportHooksRopeType;
         //public static RopeType ChainSegmentRopeType;
 
-        public static float RopeWindingSpeed = 0.5f;
-        public static float ForceMagnitude;
-        public static float BalloonUpForce;
+        public static int HookedPedCount = 0;
+
+        public static float MinTransportPedRopeLength = 2.0f;
+        public static float MinTransportRopeLength = 4.0f;
+        public static float RopeWindingSpeed = 0.15f;
+        public static float ForceMagnitude = 80.0f;
+        public static float BalloonUpForce = 35.0f;
         public static bool SolidRopes = false;
         public static bool BalloonHookMode = false;
         public static int CurrentTransportHookFilterIndex = 0;
-        public static int CurrentTransportHookModeIndex = 1;
-        public static int TransportEntitiesRadius;
+        public static int CurrentTransportHookModeIndex = 0;
+        public static int TransportEntitiesRadius = 35;
 
         //public static Stopwatch Watch = new Stopwatch();
 

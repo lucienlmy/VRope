@@ -127,6 +127,11 @@ namespace VRope
             return (Util.IsPed(entity1) || Util.IsPed(entity2));
         }
 
+        public bool HasNPCPed()
+        {
+            return ( (!Util.IsPlayer(entity1) && Util.IsPed(entity1)) || Util.IsPed(entity2));
+        }
+
         public bool Exists()
         {
             return (rope != null && rope.Exists());

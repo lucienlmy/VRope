@@ -174,10 +174,11 @@ namespace VRope
             RegisterControlKey("AttachSingleTransportHookButton", settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "AttachSingleTransportHookButton", "None"),
                 (Action)delegate { AttachTransportHooksProc(TransportHookType.SINGLE); }, TriggerCondition.PRESSED);
 
-            RegisterControlKey("NextTransportHookFilterButton", settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "NextTransportHookFilterButton", "None"),
+            RegisterControlButton("NextTransportHookFilterButton", settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "NextTransportHookFilterButton", "None"),
                 (Action)delegate { CycleTransportHookFilterProc(true); }, TriggerCondition.PRESSED);
-            //RegisterControlKey("PrevTransportHookFilterButton", settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "PrevTransportHookFilterButton", "None"),
-            //    (Action)delegate { CycleTransportHookFilterProc(false); }, TriggerCondition.PRESSED);
+
+            RegisterControlButton("NextTransportHookModeButton", settings.GetValue<String>("CONTROL_XBOX_CONTROLLER", "NextTransportHookModeButton", "None"),
+                (Action)delegate { CycleTransportHookModeProc(true); }, TriggerCondition.PRESSED);
         }
 
 
@@ -187,7 +188,7 @@ namespace VRope
 
             if (keys.Count == 0)
             {
-                UI.Notify("VRope ControlKey Error:\n Key combination for \"" + name + "\" is invalid. Check the config file. \nThe control was disabled.");
+                UI.Notify("VRope ControlKey Error:\n Key combination for \"" + name + "\" is invalid. \nThe control was disabled.");
                 return;
             }
 
@@ -200,7 +201,7 @@ namespace VRope
 
             if (buttonState.buttonPressedCount == -1)
             {
-                UI.Notify("VRope ControlButton Error:\n Button combination for \"" + name + "\" is invalid. Check the config file. \nThe control was disabled.");
+                UI.Notify("VRope ControlButton Error:\n Button combination for \"" + name + "\" is invalid. \nThe control was disabled.");
                 return;
             }
 

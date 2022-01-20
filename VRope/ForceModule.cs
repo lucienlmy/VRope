@@ -254,7 +254,7 @@ namespace VRope
 
             ForceMagnitude += increment;
 
-            SubQueue.AddSubtitle(14, "VRope Force Value: " + ForceMagnitude.ToString("0.00"), 20);
+            SubQueue.AddSubtitle(14, "VRope Force Value: " + ForceMagnitude.ToString("0.00"), 220);
         }
 
         public static void IncrementBalloonUpForce(bool negativeIncrement = false, bool halfIncrement = false)
@@ -269,14 +269,14 @@ namespace VRope
 
             BalloonUpForce += increment;
 
-            SubQueue.AddSubtitle(333, "VRope Balloon Up Force: " + BalloonUpForce.ToString("0.00"), 20);
+            SubQueue.AddSubtitle(333, "VRope Balloon Up Force: " + BalloonUpForce.ToString("0.00"), 220);
         }
 
         public static void ToggleBalloonHookModeProc()
         {
             BalloonHookMode = !BalloonHookMode;
 
-            SubQueue.AddSubtitle(1230, "VRope Balloon Hook Mode: " + (BalloonHookMode ? "[ON]" : "(OFF)"), 54);
+            SubQueue.AddSubtitle(1230, "VRope Balloon Hook Mode: " + (BalloonHookMode ? "[ON]" : "(OFF)"), 550);
         }
     }
 }

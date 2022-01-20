@@ -15,16 +15,16 @@ namespace VRope
 {
     public static class TransportModule
     {
-        private const int SUBTITLE_DURATION = 60; //frames
+        private const int SUBTITLE_DURATION = 500; //ms
 
-        private const float TRANSPORTED_ENTITY_UPVECTOR_MULT = 1.3f;
+        private const float TRANSPORTED_ENTITY_UPVECTOR_MULT = 0.8f;
 
         public enum TransportHookType
         {
             NONE = 0,
             SINGLE,
             MULTIPLE,
-            //PRECISE,
+            PRECISE,
         }
 
         public enum TransportHookMode
@@ -87,44 +87,109 @@ namespace VRope
 
         }
 
+        public static void CreateLandVehicleTransportHooks(TransportHookType hookType)
+        {
+            try
+            {
+                if (HookFilter.DefaultFilters[CurrentTransportHookFilterIndex].filterValue.Contains("GTA.Ped"))
+                    hookType = TransportHookType.SINGLE;
 
+                List<Entity> transportEntities = GetTransportHookEntities(hookType);
+                Entity playerFlyingVehicle = Util.GetVehiclePlayerIsIn();
+
+                for (int i = 0; i < transportEntities.Count; i++)
+                {
+                    Entity entity = transportEntities[i];
+                  
+                    if (!CheckTransportHookPermission(entity))
+                        continue;
+
+                    Entity hookEntity1 = (!Util.IsPed(entity) ? Game.Player.Character : playerFlyingVehicle);
+
+                    HookPair transHook = new HookPair();
+                    TransportHookMode hookMode = TransportHookMode.CENTER;
+
+                    transHook.isTransportHook = true;
+                    transHook.ropeType = TransportHooksRopeType;
+                    transHook.entity1 = hookEntity1;
+                    transHook.entity2 = entity;
+
+                    if (!Util.IsPed(entity) && hookType == TransportHookType.SINGLE)
+                    {
+                        hookMode = AllTransportHookModes[CurrentTransportHookModeIndex].first;
+                    }
+                    else if (hookType == TransportHookType.MULTIPLE)
+                    {
+                        transHook.hookOffset1 = Util.GetRandom2DPositionAround(Vector3.Zero, 0.31f);
+                    }
+
+                    switch (hookMode)
+                    {
+                        case TransportHookMode.CENTER:
+                            CreateTransportHookCenterMode(transHook); break;
+
+                        case TransportHookMode.LEFT_RIGHT:
+                            CreateTransportHookLeftRightMode(transHook); break;
+
+                    }
+                }
+            }
+            catch (Exception exc)
+            {
+                UI.Notify("VRope CreateAirVehicleTransportHooks() Error: " + GetErrorMessage(exc));
+            }
+        }
 
         public static void CreateAirVehicleTransportHooks(TransportHookType hookType)
         {
-
-            List<Entity> transportEntities = GetAirVehicleTransportHookEntities(hookType);
-            Entity playerFlyingVehicle = Util.GetVehiclePlayerIsIn();
-
-            for (int i = 0; i < transportEntities.Count; i++)
+            try
             {
-                Entity entity = transportEntities[i];
+                if (HookFilter.DefaultFilters[CurrentTransportHookFilterIndex].filterValue.Contains("GTA.Ped"))
+                    hookType = TransportHookType.SINGLE;
 
-                if (!CheckTransportHookPermission(entity))
-                    continue;
+                List<Entity> transportEntities = GetTransportHookEntities(hookType);
+                Entity playerFlyingVehicle = Util.GetVehiclePlayerIsIn();
 
-                HookPair transHook = new HookPair();
-                TransportHookMode hookMode = TransportHookMode.CENTER;
-                Entity hookEntity1 = (!Util.IsPed(entity) ? Game.Player.Character : playerFlyingVehicle);
-
-                transHook.isTransportHook = true;
-                transHook.ropeType = TransportHooksRopeType;
-                transHook.entity1 = hookEntity1;
-                transHook.entity2 = entity;
-
-                if (!Util.IsPed(entity) && hookType == TransportHookType.SINGLE)
+                for (int i = 0; i < transportEntities.Count; i++)
                 {
-                    hookMode = AllTransportHookModes[CurrentTransportHookModeIndex].first;
+                    Entity entity = transportEntities[i];
+
+                    if (!CheckTransportHookPermission(entity))
+                        continue;
+
+                    Entity hookEntity1 = (!Util.IsPed(entity) ? Game.Player.Character : playerFlyingVehicle);
+
+                    HookPair transHook = new HookPair();
+                    TransportHookMode hookMode = TransportHookMode.CENTER;
+
+                    transHook.isTransportHook = true;
+                    transHook.ropeType = TransportHooksRopeType;
+                    transHook.entity1 = hookEntity1;
+                    transHook.entity2 = entity;
+
+                    if (!Util.IsPed(entity) && hookType == TransportHookType.SINGLE)
+                    {
+                        hookMode = AllTransportHookModes[CurrentTransportHookModeIndex].first;
+                    }
+                    else if (hookType == TransportHookType.MULTIPLE)
+                    {
+                        transHook.hookOffset1 = Util.GetRandom2DPositionAround(Vector3.Zero, 0.31f);
+                    }
+
+                    switch (hookMode)
+                    {
+                        case TransportHookMode.CENTER:
+                            CreateTransportHookCenterMode(transHook); break;
+
+                        case TransportHookMode.LEFT_RIGHT:
+                            CreateTransportHookLeftRightMode(transHook); break;
+
+                    }
                 }
-
-                switch (hookMode)
-                {
-                    case TransportHookMode.CENTER:
-                        CreateTransportHookCenterMode(transHook); break;
-
-                    case TransportHookMode.LEFT_RIGHT:
-                        CreateTransportHookLeftRightMode(transHook); break;
-
-                }
+            }
+            catch (Exception exc)
+            {
+                UI.Notify("VRope CreateAirVehicleTransportHooks() Error: " + GetErrorMessage(exc));
             }
         }
 
@@ -138,15 +203,13 @@ namespace VRope
                     {
                         CreateAirVehicleTransportHooks(hookType);
                     }
-
                 }
             }
             catch (Exception exc)
             {
-                UI.Notify("VRope AttachTransportHooks Error:\n" + GetErrorMessage(exc));
+                UI.Notify("VRope AttachTransportHooks() Error:\n" + GetErrorMessage(exc));
             }
         }
-
 
 
         private static bool CheckTransportHookPermission(Entity entity)
@@ -173,7 +236,12 @@ namespace VRope
 
                 !HookFilter.DefaultFilters[CurrentTransportHookFilterIndex].matches(entity) ||
 
-                (Util.IsPed(entity) && ((Ped)entity).IsSittingInVehicle()) ||
+                Util.IsPed(entity) && 
+                    (
+                        HookedPedCount >= MAX_HOOKED_PEDS || 
+                        ((Ped)entity).IsDead || 
+                        ((Ped)entity).IsSittingInVehicle()
+                    ) ||
 
                 RopeModule.IsEntityHookedToPlayer(entity) ||
 
@@ -185,12 +253,12 @@ namespace VRope
             return true;
         }
 
-        private static List<Entity> GetAirVehicleTransportHookEntities(TransportHookType hookType)
+
+        private static List<Entity> GetTransportHookEntities(TransportHookType hookType)
         {
             Vehicle playerAirVehicle = Util.GetVehiclePlayerIsIn();
 
             List<Entity> nearbyEntities = new List<Entity>(50);
-
 
             if (hookType == TransportHookType.MULTIPLE)
             {
@@ -241,8 +309,8 @@ namespace VRope
                 }
             }
 
-            if (DebugMode)
-                UI.Notify("nearestEntity.isNull = " + (nearestEntity == null).ToString());
+            //if (DebugMode)
+            //    UI.Notify("nearestEntity.isNull = " + (nearestEntity == null).ToString());
 
             return nearestEntity;
 
@@ -256,7 +324,9 @@ namespace VRope
                 transHook.hookOffset2 += transHook.entity2.UpVector.Normalized * TRANSPORTED_ENTITY_UPVECTOR_MULT;
             }
 
-            RopeModule.CreateHook(transHook, copyHook);
+            float minRopeLength = (!Util.IsPed(transHook.entity2) ? MinTransportRopeLength : MinTransportPedRopeLength);
+
+            RopeModule.CreateHook(transHook, copyHook, minRopeLength);
         }
 
         
@@ -293,8 +363,8 @@ namespace VRope
             float greatestRopeLength = Math.Max(rope1Length, rope2Length);
 
 
-            RopeModule.CreateHook(hook1, false, MIN_ROPE_LENGTH, greatestRopeLength);
-            RopeModule.CreateHook(hook2, false, MIN_ROPE_LENGTH, greatestRopeLength);
+            RopeModule.CreateHook(hook1, false, MinTransportRopeLength, greatestRopeLength);
+            RopeModule.CreateHook(hook2, false, MinTransportRopeLength, greatestRopeLength);
         }
     }
 }
