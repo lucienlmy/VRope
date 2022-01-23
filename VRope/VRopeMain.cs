@@ -319,18 +319,19 @@ namespace VRope
                     Vector3 zAxis = new Vector3(0f, 0.01f, 0f);
 
                     entity.ApplyForce(zAxis * 2.0f);
-
-                    //Hooks[hookIndex].rope.ResetLength(true);
                 }
+            }
+            else
+            {
+                if (Util.IsVehicle(entity))
+                {
+                    //Vehicle playerVehicle = Util.GetVehiclePlayerIsIn();
+                    Vector3 zAxisDown = new Vector3(0f, 0f, -0.01f);
+                    
+                    entity.ApplyForce( zAxisDown * 40.0f );
 
-                //if (Util.IsProp(entity))
-                //{
-                //    Vector3 zAxis = new Vector3(0f, 0f, 0.01f);
-                //    //Vector3 xAxis = new Vector3(0.01f, 0f, 0f);
-
-                //    entity.ApplyForce(zAxis * 5.0f);
-                //    //entity.ApplyForce(xAxis * 5.0f);
-                //} 
+                    //entity.Rotation = new Vector3(entity.Rotation.X, entity.Rotation.Y, playerVehicle.Rotation.Z);
+                }
             }
         }
 
@@ -378,16 +379,16 @@ namespace VRope
 
                         DebugInfo += "\n | Entity Detected: " + targetEntity.GetType() + " | " + (Util.IsStatic(targetEntity) ? "Static" : "Dynamic") +
                                     "\n Position(X:" + pos.X.ToString(format) + ", Y:" + pos.Y.ToString(format) + ", Z:" + pos.Z.ToString(format) + ")" +
-                                    "\n Rotation(" + rot.X.ToString(format) + ", Y:" + rot.Y.ToString(format) + ", Z:" + rot.Z.ToString(format) + ")" +
+                                    " Rotation(" + rot.X.ToString(format) + ", Y:" + rot.Y.ToString(format) + ", Z:" + rot.Z.ToString(format) + ")" +
                                     //"\n Velocity(" + vel.X.ToString(format) + ", Y:" + vel.Y.ToString(format) + ", Z:" + vel.Z.ToString(format) + ")" +
-                                    "\n Speed(" + speed.ToString(format) + ") | Distance(" + dist.ToString(format) + ")";
+                                    "\n Speed(" + speed.ToString(format) + ") Distance(" + dist.ToString(format) + ")";
                     }
                 }
 
                 if (Hooks.Count > 0 && Hooks.Last() != null && Hooks.Last().Exists())
                 {
                     if (Hooks.Last().entity1 != null)
-                        DebugInfo += " | E1.Distance(" + Game.Player.Character.Position.DistanceTo(Hooks.Last().entity1.Position).ToString("0.00") + ")";
+                        DebugInfo += "\n | E1.Distance(" + Game.Player.Character.Position.DistanceTo(Hooks.Last().entity1.Position).ToString("0.00") + ")";
 
                     if (Hooks.Last().entity2 != null)
                         DebugInfo += " |E2.Distance(" + Game.Player.Character.Position.DistanceTo(Hooks.Last().entity2.Position).ToString("0.00") + ")";
@@ -396,9 +397,9 @@ namespace VRope
                 Vector3 ppos = Game.Player.Character.Position;
 
                 DebugInfo += "\n Player[" + " Speed(" + Game.Player.Character.Velocity.Length().ToString(format) + ")," +
-                            " Position(X:" + ppos.X.ToString(format) + ", Y:" + ppos.Y.ToString(format) + ", Z:" + ppos.Z.ToString(format) + ") ]" +
-                            "\nHookedPeds(" + HookedPedCount + ")";
-                            
+                            " Position(X:" + ppos.X.ToString(format) + ", Y:" + ppos.Y.ToString(format) + ", Z:" + ppos.Z.ToString(format) + ") ]"
+                            + "\nHookedPeds(" + HookedPedCount + ")"
+                            + " Clock(" + DateTime.Now.ToString("h:mm:ss") + ")";
             }
         }
 

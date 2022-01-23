@@ -252,7 +252,7 @@ namespace VRope
             if (halfIncrement)
                 increment = increment / 2f;
 
-            ForceMagnitude += increment;
+            ForceMagnitude += increment * Game.LastFrameTime * 10.0f;
 
             SubQueue.AddSubtitle(14, "VRope Force Value: " + ForceMagnitude.ToString("0.00"), 220);
         }
@@ -267,7 +267,7 @@ namespace VRope
             if (halfIncrement)
                 increment = increment / 2f;
 
-            BalloonUpForce += increment;
+            BalloonUpForce += increment * Game.LastFrameTime * 10.0f;
 
             SubQueue.AddSubtitle(333, "VRope Balloon Up Force: " + BalloonUpForce.ToString("0.00"), 220);
         }

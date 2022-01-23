@@ -17,7 +17,7 @@ namespace VRope
     {
         private const int SUBTITLE_DURATION = 500; //ms
 
-        private const float TRANSPORTED_ENTITY_UPVECTOR_MULT = 0.8f;
+        private const float TRANSPORTED_ENTITY_UPVECTOR_MULT = 0.7f;
 
         public enum TransportHookType
         {
@@ -30,13 +30,18 @@ namespace VRope
         public enum TransportHookMode
         {
             CENTER = 0,
-            LEFT_RIGHT
+            LEFT_RIGHT,
+            FRONT_BACK,
+            CROSS,
+            HEXAGON
         }
 
         public readonly static Pair<TransportHookMode, String>[] AllTransportHookModes =
         {
             Pair.Make( TransportHookMode.CENTER, "{ Center }"),
-            Pair.Make( TransportHookMode.LEFT_RIGHT, "{ Left/Right }")
+            Pair.Make( TransportHookMode.LEFT_RIGHT, "{ Left/Right }"),
+            Pair.Make( TransportHookMode.FRONT_BACK, "{ Front/Back }" ),
+            //Pair.Make( TransportHookMode.CROSS, "{ Cross }" )
         };
 
         public static void CycleTransportHookFilterProc(bool nextFilter = true)
@@ -87,6 +92,8 @@ namespace VRope
 
         }
 
+
+
         public static void CreateLandVehicleTransportHooks(TransportHookType hookType)
         {
             try
@@ -100,7 +107,7 @@ namespace VRope
                 for (int i = 0; i < transportEntities.Count; i++)
                 {
                     Entity entity = transportEntities[i];
-                  
+
                     if (!CheckTransportHookPermission(entity))
                         continue;
 
@@ -180,9 +187,12 @@ namespace VRope
                     {
                         case TransportHookMode.CENTER:
                             CreateTransportHookCenterMode(transHook); break;
-
                         case TransportHookMode.LEFT_RIGHT:
                             CreateTransportHookLeftRightMode(transHook); break;
+                        case TransportHookMode.FRONT_BACK:
+                            CreateTransportHookFrontBackMode(transHook); break;
+                        case TransportHookMode.CROSS:
+                            CreateTransportHookCrossMode(transHook); break;
 
                     }
                 }
@@ -212,6 +222,7 @@ namespace VRope
         }
 
 
+
         private static bool CheckTransportHookPermission(Entity entity)
         {
             //if (DebugMode)
@@ -236,10 +247,10 @@ namespace VRope
 
                 !HookFilter.DefaultFilters[CurrentTransportHookFilterIndex].matches(entity) ||
 
-                Util.IsPed(entity) && 
+                Util.IsPed(entity) &&
                     (
-                        HookedPedCount >= MAX_HOOKED_PEDS || 
-                        ((Ped)entity).IsDead || 
+                        HookedPedCount >= MAX_HOOKED_PEDS ||
+                        ((Ped)entity).IsDead ||
                         ((Ped)entity).IsSittingInVehicle()
                     ) ||
 
@@ -319,21 +330,23 @@ namespace VRope
 
         private static void CreateTransportHookCenterMode(HookPair transHook, bool copyHook = true)
         {
+            float minRopeLength = (!Util.IsPed(transHook.entity2) ? MinTransportRopeLength : MinTransportPedRopeLength);
+
+            Vector3 entityDimensions = transHook.entity2.Model.GetDimensions();
+
             if (!Util.IsPed(transHook.entity2))
             {
-                transHook.hookOffset2 += transHook.entity2.UpVector.Normalized * TRANSPORTED_ENTITY_UPVECTOR_MULT;
+                transHook.hookOffset2 += transHook.entity2.UpVector * entityDimensions.Z * 0.5f;
             }
-
-            float minRopeLength = (!Util.IsPed(transHook.entity2) ? MinTransportRopeLength : MinTransportPedRopeLength);
 
             RopeModule.CreateHook(transHook, copyHook, minRopeLength);
         }
 
-        
+
         private static void CreateTransportHookLeftRightMode(HookPair transHook)
         {
             Vehicle playerVehicle = Util.GetVehiclePlayerIsIn();
-            Vector3 entityDimensions = transHook.entity2.Model.GetDimensions() / 2.0f;
+            Vector3 entityDimensions = transHook.entity2.Model.GetDimensions();
 
             HookPair hook1 = new HookPair(transHook);
             HookPair hook2 = new HookPair(transHook);
@@ -343,28 +356,80 @@ namespace VRope
             hook1.hookOffset1 = -playerHookOffset;
             hook2.hookOffset1 = playerHookOffset;
 
-            float RightVectorMult = 0.3f;
-            //float ForwardVectorMult = 0.4f;
+            Vector3 raySourceLeft = transHook.entity2.Position +
+                                    (-transHook.entity2.RightVector * (entityDimensions.Y / 5.0f));
 
-            Vector3 offsetLeft = //(-transHook.entity2.ForwardVector.Normalized * entityDimensions.X * ForwardVectorMult) +
-                                 (-transHook.entity2.RightVector.Normalized * entityDimensions.Y * RightVectorMult) +
-                                 (transHook.entity2.UpVector.Normalized * entityDimensions.Z * TRANSPORTED_ENTITY_UPVECTOR_MULT);
+            Vector3 raySourceRight = transHook.entity2.Position +
+                                    (transHook.entity2.RightVector * (entityDimensions.Y / 5.0f));
 
-            Vector3 offsetRight = //(-transHook.entity2.ForwardVector.Normalized * entityDimensions.X * ForwardVectorMult) +
-                                  (transHook.entity2.RightVector.Normalized * entityDimensions.Y * RightVectorMult) +
-                                  (transHook.entity2.UpVector.Normalized * entityDimensions.Z * TRANSPORTED_ENTITY_UPVECTOR_MULT);
+            RaycastResult rayLeft = World.Raycast(raySourceLeft, transHook.entity2.RightVector, 7.0f, IntersectOptions.Everything, playerVehicle);
+            RaycastResult rayRight = World.Raycast(raySourceRight, -transHook.entity2.RightVector, 7.0f, IntersectOptions.Everything, playerVehicle);
 
-            hook1.hookOffset2 = offsetLeft;
-            hook2.hookOffset2 = offsetRight;
+            Vector3 heightOffset = (transHook.entity2.UpVector * entityDimensions.Z * 0.5f);
 
+            if (rayLeft.DitHitEntity && rayLeft.HitEntity == transHook.entity2 &&
+               rayRight.DitHitEntity && rayRight.HitEntity == transHook.entity2)
+            {
+                hook1.hookOffset2 = rayLeft.HitCoords - transHook.entity2.Position + heightOffset;
+                hook2.hookOffset2 = rayRight.HitCoords - transHook.entity2.Position + heightOffset;
+            }
+            else
+            {
+                if (DebugMode)
+                    UI.Notify("Failed L/R Raycast Hook");
+
+                hook1.hookOffset2 = (-transHook.entity2.RightVector * (entityDimensions.Y / 5.0f)) + heightOffset;
+                hook2.hookOffset2 = (transHook.entity2.RightVector * (entityDimensions.Y / 5.0f)) + heightOffset;
+            }
 
             float rope1Length = (hook1.entity1.Position + hook1.hookOffset1).DistanceTo(hook1.entity2.Position + hook1.hookOffset2);
             float rope2Length = (hook2.entity1.Position + hook1.hookOffset1).DistanceTo(hook2.entity2.Position + hook1.hookOffset2);
+
             float greatestRopeLength = Math.Max(rope1Length, rope2Length);
 
 
             RopeModule.CreateHook(hook1, false, MinTransportRopeLength, greatestRopeLength);
             RopeModule.CreateHook(hook2, false, MinTransportRopeLength, greatestRopeLength);
+        }
+
+        private static void CreateTransportHookFrontBackMode(HookPair transHook)
+        {
+            Vehicle playerVehicle = Util.GetVehiclePlayerIsIn();
+            Vector3 entityDimensions = transHook.entity2.Model.GetDimensions();
+
+            HookPair hook1 = new HookPair(transHook);
+            HookPair hook2 = new HookPair(transHook);
+
+            Vector3 playerHookOffset = playerVehicle.ForwardVector * 1.9f;
+
+            hook1.hookOffset1 = -playerHookOffset;
+            hook2.hookOffset1 = playerHookOffset;
+
+            
+            Vector3 hookOffsetFront = (-transHook.entity2.ForwardVector * (entityDimensions.X / 1.9f))
+                                   + (transHook.entity2.UpVector * (entityDimensions.Z * 0.6f));
+
+            Vector3 hookOffsetBack = (transHook.entity2.ForwardVector * (entityDimensions.X / 1.9f))
+                                  + (transHook.entity2.UpVector * (entityDimensions.Z * 0.6f));
+
+            hook1.hookOffset2 = hookOffsetFront;
+            hook2.hookOffset2 = hookOffsetBack;
+
+            float rope1Length = (hook1.entity1.Position + hook1.hookOffset1).DistanceTo(hook1.entity2.Position + hook1.hookOffset2);
+            float rope2Length = (hook2.entity1.Position + hook1.hookOffset1).DistanceTo(hook2.entity2.Position + hook1.hookOffset2);
+
+            float greatestRopeLength = Math.Max(rope1Length, rope2Length);
+
+
+            RopeModule.CreateHook(hook1, false, MinTransportRopeLength, greatestRopeLength);
+            RopeModule.CreateHook(hook2, false, MinTransportRopeLength, greatestRopeLength);
+        }
+
+        private static void CreateTransportHookCrossMode(HookPair transHook)
+        {
+            CreateTransportHookFrontBackMode(transHook);
+
+            CreateTransportHookLeftRightMode(transHook);
         }
     }
 }

@@ -101,8 +101,8 @@ namespace VRope
         public static bool SolidRopes = false;
         public static bool BalloonHookMode = false;
         public static int CurrentTransportHookFilterIndex = 0;
-        public static int CurrentTransportHookModeIndex = 0;
-        public static int TransportEntitiesRadius = 35;
+        public static int CurrentTransportHookModeIndex = 1;
+        public static int TransportEntitiesRadius = 32;
 
         //public static Stopwatch Watch = new Stopwatch();
 
