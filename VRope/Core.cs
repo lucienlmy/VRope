@@ -22,6 +22,11 @@ namespace VRope
         public const int UPDATE_INTERVAL = 10; //milliseconds.
         public const int UPDATE_FPS = (1000 / UPDATE_INTERVAL); //100 FPS
 
+        public const bool ENABLE_ROPE_MODULE = true;
+        public const bool ENABLE_FORCE_MODULE = true;
+        public const bool ENABLE_TRANSPORT_MODULE = true;
+
+
         public static bool EnableXBoxControllerInput;
         public static bool FreeRangeMode;
         public static String ConfigFilePath;
@@ -30,7 +35,7 @@ namespace VRope
         public static float MaxHookedPedDistance;
 
         public static bool ShowHookRopeProp = true;
-        public static bool HookPedsAtBonesCoords = false;
+        public static bool HookPedsAtBonesCoords = true;
 
         public static bool ContinuousForce;
         public static float ForceIncrementValue;
@@ -44,11 +49,13 @@ namespace VRope
         //public static float CHAIN_JOINT_OFFSET = 0.3f;    
         //public const float CHAIN_JOINT_PROP_MASS = 10.0f;
 
-        public const int MAX_HOOKED_PEDS = 3; // RAGE/Euphoria limit. Attaching 4 or more Peds will crash the game.
+        public const int MAX_HOOK_COUNT = 59;
 
+        public const float MAX_HOOKED_PED_SPEED = 1.87f;
+        public const int MAX_HOOKED_PEDS = 300;
         public const int MAX_SELECTED_HOOKS = 30;
         public const int INIT_HOOK_LIST_CAPACITY = 100;
-        public const int PED_RAGDOLL_DURATION = 60000; //TODO: Change to 60k on Release
+        public const int PED_RAGDOLL_DURATION = 5000; // WARNING: Values above 9000 are very likely to crash the game (GTAV v1.0.2545).
         public const char SEPARATOR_CHAR = '+';
 
         public const float MIN_MIN_ROPE_LENGTH = 0.5f;
@@ -68,6 +75,7 @@ namespace VRope
         public static bool NoSubtitlesMode = false;
 
         public static bool DebugMode = true;
+        public static bool TestAction = false;
 
 
         public static Model RopeHookPropModel;
@@ -169,5 +177,16 @@ namespace VRope
 
             UI.Notify("VRope 'No Subtitles' Mode " + (NoSubtitlesMode ? "[Enabled]." : "(Disabled)."));
         }
+    
+    
+        //public static void ThisIsATestFunction()
+        //{
+        //    if (TestAction1 && Game.Player.Character.IsInVehicle() && !Util.IsPlayerSittingInFlyingVehicle())
+        //    {
+        //        Vehicle vehicle = Util.GetVehiclePlayerIsIn();
+
+        //        vehicle.ApplyForce(Util.AsVector(0f, 0f, 0.01f) * 1000.0f);
+        //    }
+        //}
     }
 }

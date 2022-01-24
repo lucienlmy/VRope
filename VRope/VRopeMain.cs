@@ -23,10 +23,16 @@ namespace VRope
 {
     public class VRopeMain : Script
     {
-        protected void UselessTestFunc()
+        protected void ThisWillRunEveryFrame()
         {
-            //HookFilter filter = new HookFilter("", "");
-            
+            if (Game.Player.Character.IsInVehicle() && !Util.IsPlayerSittingInFlyingVehicle())
+            {
+                Vehicle vehicle = Util.GetVehiclePlayerIsIn();
+
+                vehicle.ApplyForce(Util.AsVector(0f, 0f, -0.01f) * 70.0f);
+
+                DebugInfo += " [Heavy Af] ";
+            }
         }
 
 
@@ -114,38 +120,48 @@ namespace VRope
                 ModActive = settings.GetValue("GLOBAL_VARS", "ENABLE_ON_GAME_LOAD", false);
                 NoSubtitlesMode = settings.GetValue("GLOBAL_VARS", "NO_SUBTITLES_MODE", false);
                 EnableXBoxControllerInput = settings.GetValue("GLOBAL_VARS", "ENABLE_XBOX_CONTROLLER_INPUT", true);
-                FreeRangeMode = settings.GetValue("GLOBAL_VARS", "FREE_RANGE_MODE", true);
-                MinRopeLength = (settings.GetValue("GLOBAL_VARS", "MIN_ROPE_LENGTH", MIN_MIN_ROPE_LENGTH * 10.0f) / 10.0f);
-                MaxHookCreationDistance = settings.GetValue("GLOBAL_VARS", "MAX_HOOK_CREATION_DISTANCE", 70.0f);
-                MaxHookedEntityDistance = settings.GetValue("GLOBAL_VARS", "MAX_HOOKED_ENTITY_DISTANCE", 150.0f);
-                MaxHookedPedDistance = settings.GetValue("GLOBAL_VARS", "MAX_HOOKED_PED_DISTANCE", 70.0f);
-                MaxBalloonHookAltitude = settings.GetValue("GLOBAL_VARS", "MAX_BALLOON_HOOK_ALTITUDE", 200.0f);
-                RopeHookPropModel = settings.GetValue("GLOBAL_VARS", "ROPE_HOOK_PROP_MODEL", "prop_golf_ball");
-                ShowHookRopeProp = settings.GetValue("GLOBAL_VARS", "SHOW_ROPE_HOOK_PROP", true);
-                RopeWindingSpeed = (settings.GetValue("GLOBAL_VARS", "ROPE_WINDING_SPEED", 15.0f) / 100.0f);
-
-                //chainJointPropModel = settings.GetValue("CHAIN_MECHANICS_VARS", "CHAIN_JOINT_PROP_MODEL", "prop_golf_ball");
-                //SHOW_CHAIN_JOINT_PROP = settings.GetValue("CHAIN_MECHANICS_VARS", "SHOW_CHAIN_JOINT_PROP", true);
-                //MAX_CHAIN_SEGMENTS = settings.GetValue("CHAIN_MECHANICS_VARS", "MAX_CHAIN_SEGMENTS", 15);
 
                 XBoxController.LEFT_TRIGGER_THRESHOLD = settings.GetValue<byte>("CONTROL_XBOX_CONTROLLER", "LEFT_TRIGGER_THRESHOLD", 255);
                 XBoxController.RIGHT_TRIGGER_THRESHOLD = settings.GetValue<byte>("CONTROL_XBOX_CONTROLLER", "RIGHT_TRIGGER_THRESHOLD", 255);
 
-                EntityToEntityHookRopeType = settings.GetValue<RopeType>("HOOK_ROPE_TYPES", "EntityToEntityHookRopeType", (RopeType)1);
-                PlayerToEntityHookRopeType = settings.GetValue<RopeType>("HOOK_ROPE_TYPES", "PlayerToEntityHookRopeType", (RopeType)4);
-                TransportHooksRopeType = settings.GetValue<RopeType>("HOOK_ROPE_TYPES", "TransportHooksRopeType", (RopeType)3);
+                //if (ENABLE_ROPE_MODULE)
+                {
+                    FreeRangeMode = settings.GetValue("ROPE_MECHANICS_VARS", "FREE_RANGE_MODE", true);
+                    MinRopeLength = (settings.GetValue("ROPE_MECHANICS_VARS", "MIN_ROPE_LENGTH", MIN_MIN_ROPE_LENGTH * 10.0f) / 10.0f);
+                    MaxHookCreationDistance = settings.GetValue("ROPE_MECHANICS_VARS", "MAX_HOOK_CREATION_DISTANCE", 70.0f);
+                    MaxHookedEntityDistance = settings.GetValue("ROPE_MECHANICS_VARS", "MAX_HOOKED_ENTITY_DISTANCE", 150.0f);
+                    MaxHookedPedDistance = settings.GetValue("ROPE_MECHANICS_VARS", "MAX_HOOKED_PED_DISTANCE", 70.0f);
+                    RopeHookPropModel = settings.GetValue("ROPE_MECHANICS_VARS", "ROPE_HOOK_PROP_MODEL", "prop_golf_ball");
+                    ShowHookRopeProp = settings.GetValue("ROPE_MECHANICS_VARS", "SHOW_ROPE_HOOK_PROP", true);
+                    RopeWindingSpeed = (settings.GetValue("ROPE_MECHANICS_VARS", "ROPE_WINDING_SPEED", 15.0f) / 100.0f);
+
+                    EntityToEntityHookRopeType = settings.GetValue<RopeType>("HOOK_ROPE_TYPES", "EntityToEntityHookRopeType", (RopeType)1);
+                    PlayerToEntityHookRopeType = settings.GetValue<RopeType>("HOOK_ROPE_TYPES", "PlayerToEntityHookRopeType", (RopeType)4);
+                }
+
+                //chainJointPropModel = settings.GetValue("CHAIN_MECHANICS_VARS", "CHAIN_JOINT_PROP_MODEL", "prop_golf_ball");
+                //SHOW_CHAIN_JOINT_PROP = settings.GetValue("CHAIN_MECHANICS_VARS", "SHOW_CHAIN_JOINT_PROP", true);
+                //MAX_CHAIN_SEGMENTS = settings.GetValue("CHAIN_MECHANICS_VARS", "MAX_CHAIN_SEGMENTS", 15);
                 //ChainSegmentRopeType = settings.GetValue<RopeType>("HOOK_ROPE_TYPES", "ChainSegmentRopeType", (RopeType)4);
 
-                TransportEntitiesRadius = settings.GetValue("TRANSPORT_HOOKS_VARS", "TRANSPORT_ENTITIES_RADIUS", 34);
-                MinTransportRopeLength = settings.GetValue("TRANSPORT_HOOKS_VARS", "MIN_TRANSPORT_ROPE_LENGTH", 4.0f);
-                MinTransportPedRopeLength = settings.GetValue("TRANSPORT_HOOKS_VARS", "MIN_TRANSPORT_PED_ROPE_LENGTH", 2.0f);
+                if (ENABLE_FORCE_MODULE)
+                {
+                    ForceMagnitude = settings.GetValue("FORCE_MECHANICS_VARS", "DEFAULT_FORCE_VALUE", 80.0f);
+                    BalloonUpForce = settings.GetValue("FORCE_MECHANICS_VARS", "DEFAULT_BALLOON_UP_FORCE_VALUE", 45.0f);
+                    ForceIncrementValue = settings.GetValue("FORCE_MECHANICS_VARS", "FORCE_INCREMENT_VALUE", 2.0f);
+                    BalloonUpForceIncrement = settings.GetValue("FORCE_MECHANICS_VARS", "BALLOON_UP_FORCE_INCREMENT", 1.0f);
+                    ContinuousForce = settings.GetValue("FORCE_MECHANICS_VARS", "CONTINUOUS_FORCE", false);
+                    MaxBalloonHookAltitude = settings.GetValue("FORCE_MECHANICS_VARS", "MAX_BALLOON_HOOK_ALTITUDE", 200.0f);
+                }
 
-                ForceMagnitude = settings.GetValue("FORCE_MECHANICS_VARS", "DEFAULT_FORCE_VALUE", 80.0f);
-                BalloonUpForce = settings.GetValue("FORCE_MECHANICS_VARS", "DEFAULT_BALLOON_UP_FORCE_VALUE", 45.0f);
-                ForceIncrementValue = settings.GetValue("FORCE_MECHANICS_VARS", "FORCE_INCREMENT_VALUE", 2.0f);
-                BalloonUpForceIncrement = settings.GetValue("FORCE_MECHANICS_VARS", "BALLOON_UP_FORCE_INCREMENT", 1.0f);
-                ContinuousForce = settings.GetValue("FORCE_MECHANICS_VARS", "CONTINUOUS_FORCE", false);
 
+                if (ENABLE_TRANSPORT_MODULE)
+                {
+                    TransportEntitiesRadius = settings.GetValue("TRANSPORT_HOOKS_VARS", "TRANSPORT_ENTITIES_RADIUS", 34);
+                    MinTransportRopeLength = settings.GetValue("TRANSPORT_HOOKS_VARS", "MIN_TRANSPORT_ROPE_LENGTH", 4.0f);
+                    MinTransportPedRopeLength = settings.GetValue("TRANSPORT_HOOKS_VARS", "MIN_TRANSPORT_PED_ROPE_LENGTH", 2.0f);
+                    TransportHooksRopeType = settings.GetValue<RopeType>("HOOK_ROPE_TYPES", "TransportHooksRopeType", (RopeType)3);
+                }
 
                 InitControlKeysFromConfig(settings);
 
@@ -186,7 +202,8 @@ namespace VRope
                     else if (!Hooks[i].IsValid())
                     {
                         if (DebugMode)
-                            UI.Notify("Deleting Hook - Invalid. i:" + i);
+                            UI.Notify("Deleting Hook - Invalid. i:" + i + 
+                                "\nRope.null:" + (Hooks[i].rope == null).ToString());
 
                         deleteHook = true;
                     }
@@ -218,7 +235,7 @@ namespace VRope
 
                         deleteHook = true;
                     }
-                    
+
 
                     if (deleteHook)
                     {
@@ -226,7 +243,7 @@ namespace VRope
                         continue;
                     }
 
-                    if (Hooks[i].HasPed())
+                    if (Hooks[i].HasNPCPed())
                         ProcessPedsInHook(i);
 
                     if (Hooks[i].isEntity1ABalloon)
@@ -235,8 +252,7 @@ namespace VRope
                     if (Hooks[i].isTransportHook)
                         ProcessTransportHook(i);
 
-                    //if (Hooks[i].isWinding || Hooks[i].isUnwinding)
-                    //    StepRopeWinding(i);
+                    
                 }
             }
 
@@ -247,36 +263,45 @@ namespace VRope
         {
             try
             {
-                Ped ped = (Ped)(Util.IsPed(Hooks[hookIndex].entity1) ? Hooks[hookIndex].entity1 : Hooks[hookIndex].entity2);
+                Ped ped = (Ped)(Util.IsNPCPed(Hooks[hookIndex].entity1) ? Hooks[hookIndex].entity1 : Hooks[hookIndex].entity2);
 
-                if (Util.IsPlayer(Hooks[hookIndex].entity1))
-                {
-                    if (Util.IsPed(Hooks[hookIndex].entity2))
-                        ped = (Ped)Hooks[hookIndex].entity2;
-                    else return;
-                }
 
-                if (ped.IsAlive)
+                if (ped.IsAlive && !ped.IsRagdoll)
                 {
-                    if (!ped.IsRagdoll)
+                    bool isWinding = Hooks[hookIndex].isWinding;
+                    bool isUnwinding = Hooks[hookIndex].isUnwinding;
+
+                    int lastHookIndex = Hooks.Count - 1;
+
+
+                    if (!ped.IsInAir && !ped.IsInWater)
                     {
-                        bool isWinding = Hooks[hookIndex].isWinding;
-                        bool isUnwinding = Hooks[hookIndex].isUnwinding;
+                        if (ped.Velocity.Length() > MAX_HOOKED_PED_SPEED ||
+                            ped.HeightAboveGround > ped.Model.GetDimensions().Z * 0.48f ||
+                            ped.IsInjured)
+                        {
+                            Util.MakePedRagdoll(ped, PED_RAGDOLL_DURATION);
+                            RecreateEntityHook(hookIndex, true);
 
-                        //Util.MakePedRagdoll(ped, PED_RAGDOLL_DURATION);
-                        RecreateEntityHook(hookIndex);
-
-                        int lastHookIndex = Hooks.Count - 1;
-
-                        SetHookRopeWindingByIndex(lastHookIndex, isWinding);
-                        SetHookRopeUnwindingByIndex(lastHookIndex, isUnwinding);
+                            SetHookRopeWindingByIndex(hookIndex, isWinding);
+                            SetHookRopeUnwindingByIndex(hookIndex, isUnwinding);
+                        }
                     }
+                    else
+                    {
+                        Util.MakePedRagdoll(ped, PED_RAGDOLL_DURATION);
+                        RecreateEntityHook(hookIndex, true);
+
+                        SetHookRopeWindingByIndex(hookIndex, isWinding);
+                        SetHookRopeUnwindingByIndex(hookIndex, isUnwinding);
+                    }
+
                 }
 
             }
             catch (Exception exc)
             {
-                UI.Notify("VRope ProcessPedsInHook() Error:\n" + 
+                UI.Notify("VRope ProcessPedsInHook() Error:\n" +
                     GetErrorMessage(exc, "Hook Count: " + Hooks.Count + " Hook Index: " + hookIndex) +
                     "\nMod execution halted.");
 
@@ -327,8 +352,8 @@ namespace VRope
                 {
                     //Vehicle playerVehicle = Util.GetVehiclePlayerIsIn();
                     Vector3 zAxisDown = new Vector3(0f, 0f, -0.01f);
-                    
-                    entity.ApplyForce( zAxisDown * 40.0f );
+
+                    entity.ApplyForce(zAxisDown * 40.0f);
 
                     //entity.Rotation = new Vector3(entity.Rotation.X, entity.Rotation.Y, playerVehicle.Rotation.Z);
                 }
@@ -399,7 +424,7 @@ namespace VRope
                 DebugInfo += "\n Player[" + " Speed(" + Game.Player.Character.Velocity.Length().ToString(format) + ")," +
                             " Position(X:" + ppos.X.ToString(format) + ", Y:" + ppos.Y.ToString(format) + ", Z:" + ppos.Z.ToString(format) + ") ]"
                             + "\nHookedPeds(" + HookedPedCount + ")"
-                            + " Clock(" + DateTime.Now.ToString("h:mm:ss") + ")";
+                            + " Clock(" + DateTime.Now.ToString("HH:mm:ss") + ")";
             }
         }
 
@@ -464,7 +489,9 @@ namespace VRope
                 CheckForKeysReleased();
 
                 ProcessHooks();
-                //ProcessChains();
+
+                if (TestAction)
+                    ThisWillRunEveryFrame();
 
                 //long elapsedTime = Watch.ElapsedMilliseconds - firstTime;
                 //DebugInfo += "\n Loop Time(" + elapsedTime + " ms) ";

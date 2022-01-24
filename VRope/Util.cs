@@ -56,6 +56,10 @@ namespace VRope
             return Function.Call<bool>(Hash.IS_ENTITY_A_PED, index);
         }
 
+        public static bool IsNPCPed(Entity e)
+        {
+            return (IsPed(e) && e != Game.Player.Character);
+        }
 
         public static Vector3 GetEntityDimensions(Entity entity)
         {
@@ -90,9 +94,14 @@ namespace VRope
             return GetVehiclePedIsIn(Game.Player.Character, includeLastVehicle);
         }
 
-        public static bool IsVehiclePlayerIsIn(Entity vehicle, bool includeLastVehicle = false)
+        public static bool IsPlayerInVehicle(Entity vehicle, bool includeLastVehicle = false)
         {
             return (GetVehiclePlayerIsIn(includeLastVehicle) == vehicle);
+        }
+
+        public static bool IsPlayerInVehicle()
+        {
+            return Game.Player.Character.IsInVehicle();
         }
 
         public static bool IsVehicle(Entity e)

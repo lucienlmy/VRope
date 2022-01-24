@@ -62,7 +62,6 @@ namespace VRope
             this.isUnwinding = other.isUnwinding;
             this.hookPoint1 = other.hookPoint1;
             this.hookPoint2 = other.hookPoint2;
-            this.rope = other.rope;
             this.ropeType = other.ropeType;
             this.hookOffset1 = other.hookOffset1;
             this.hookOffset2 = other.hookOffset2;
@@ -119,7 +118,7 @@ namespace VRope
                 Util.DeleteEntity(entity2);
             }
 
-            //Reset();
+            Reset();
         }
 
         public bool HasPed()

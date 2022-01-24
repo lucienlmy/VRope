@@ -126,14 +126,17 @@ namespace VRope
                     (hook.entity2 == null && !hook.isEntity2AMapPosition))
                     return null;
 
-                if (hook.HasNPCPed())
+                if (Hooks.Count >= MAX_HOOK_COUNT || 
+                    (hook.HasNPCPed() && HookedPedCount >= MAX_HOOKED_PEDS))
                 {
-                    if (HookedPedCount >= MAX_HOOKED_PEDS)
-                        return null;
+                    return null;
                 }
 
                 Vector3 entity1HookPosition = hook.entity1.Position + hook.hookOffset1;
                 Vector3 entity2HookPosition = Vector3.Zero;
+
+                bool makePedsRagdoll = false;
+
 
                 if (hook.isEntity2AMapPosition)
                 {
@@ -144,14 +147,15 @@ namespace VRope
                 {
                     entity2HookPosition = hook.entity2.Position + hook.hookOffset2;
                 }
-
+                
 
                 if (Util.IsPed(hook.entity1) && !Util.IsPlayer(hook.entity1))
                 {
                     if (hookAtBonePositions)
                         entity1HookPosition = Util.GetNearestBonePosition((Ped)hook.entity1, entity1HookPosition);
 
-                    Util.MakePedRagdoll((Ped)hook.entity1, PED_RAGDOLL_DURATION);
+                    if(makePedsRagdoll)
+                        Util.MakePedRagdoll((Ped)hook.entity1, PED_RAGDOLL_DURATION);
                 }
 
 
@@ -160,11 +164,12 @@ namespace VRope
                     if (hookAtBonePositions)
                         entity2HookPosition = Util.GetNearestBonePosition((Ped)hook.entity2, entity2HookPosition);
 
-                    Util.MakePedRagdoll((Ped)hook.entity2, PED_RAGDOLL_DURATION);
+                    if(makePedsRagdoll)
+                        Util.MakePedRagdoll((Ped)hook.entity2, PED_RAGDOLL_DURATION);
                 }
 
 
-                float ropeLength = (customRopeLength > 0.0f ? customRopeLength : entity1HookPosition.DistanceTo(entity2HookPosition)); //TRY1
+                float ropeLength = (customRopeLength > 0.0f ? customRopeLength : World.GetDistance(entity1HookPosition, entity2HookPosition)); //TRY1
 
                 if (ropeLength < minRopeLength)
                     ropeLength = minRopeLength;
@@ -205,7 +210,7 @@ namespace VRope
 
             HookPair resultHook = CreateEntityHook(source, copyHook, HookPedsAtBonesCoords, minRopeLength, customRopeLength);
 
-            if (resultHook != null && resultHook.IsValid())
+            if (resultHook != null)
                 Hooks.Add(resultHook);
         }
 
@@ -213,6 +218,9 @@ namespace VRope
         public static bool CheckHookPermission(HookPair hook)
         {
             if (hook == null || hook.entity1 == null)
+                return false;
+
+            if (Hooks.Count >= MAX_HOOK_COUNT)
                 return false;
 
             if (hook.entity2 == null && !hook.isEntity2AMapPosition)
@@ -708,7 +716,7 @@ namespace VRope
         }
 
 
-        public static void RecreateEntityHook(int hookIndex)
+        public static void RecreateEntityHook(int hookIndex, bool calcNewRopeLength = true)
         {
             if (hookIndex >= 0 && hookIndex < Hooks.Count)
             {
@@ -717,15 +725,31 @@ namespace VRope
 
                 HookPair copyHook = new HookPair(Hooks[hookIndex]);
 
-                DeleteHookByIndex(hookIndex, true);
+                float customRopeLength = (!calcNewRopeLength ? Hooks[hookIndex].rope.Length : 0.0f);
 
-                bool hookAtBoneCoords = (!copyHook.isTransportHook ? HookPedsAtBonesCoords : false);
 
-                Hooks.Add(CreateEntityHook(copyHook, true, hookAtBoneCoords, MinRopeLength));
+                DeleteHookByIndex(hookIndex, false);
+
+                Hooks[hookIndex] = CreateEntityHook(copyHook, false, true, MinRopeLength, customRopeLength);
+
+
+                Ped ped = GetNPCPedInHook(Hooks[hookIndex]);
+
+                ped.Velocity = Vector3.Zero;
             }
         }
 
 
+        public static Ped GetNPCPedInHook(HookPair hook)
+        {
+            if (hook == null)
+                return null;
 
+            if (Util.IsNPCPed(hook.entity1))
+                return (Ped)hook.entity1;
+            else if (Util.IsNPCPed(hook.entity2))
+                return (Ped)hook.entity2;
+            else return null;
+        }
     }
 }

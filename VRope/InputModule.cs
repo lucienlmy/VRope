@@ -26,71 +26,86 @@ namespace VRope
                 (Action)ToggleModActiveProc, TriggerCondition.PRESSED);
             RegisterControlKey("ToggleNoSubtitlesModeKey", settings.GetValue<String>("CONTROL_KEYBOARD", "ToggleNoSubtitlesModeKey", "None"),
                 (Action)ToggleNoSubtitlesModeProc, TriggerCondition.PRESSED);
-            RegisterControlKey("MultipleObjectSelectionKey", settings.GetValue<String>("CONTROL_KEYBOARD", "MultipleObjectSelectionKey", "None"),
-                (Action)MultipleObjectSelectionProc, TriggerCondition.PRESSED);
-
-            RegisterControlKey("AttachPlayerToEntityKey", settings.GetValue<String>("CONTROL_KEYBOARD", "AttachPlayerToEntityKey", "None"),
-                (Action)AttachPlayerToEntityProc, TriggerCondition.PRESSED);
-            RegisterControlKey("AttachEntityToEntityKey", settings.GetValue<String>("CONTROL_KEYBOARD", "AttachEntityToEntityKey", "None"),
-                (Action)AttachEntityToEntityRopeProc, TriggerCondition.PRESSED);
-            RegisterControlKey("DeleteLastHookKey", settings.GetValue<String>("CONTROL_KEYBOARD", "DeleteLastHookKey", "None"),
-                (Action)DeleteLastHookProc, TriggerCondition.PRESSED);
-            RegisterControlKey("DeleteFirstHookKey", settings.GetValue<String>("CONTROL_KEYBOARD", "DeleteFirstHookKey", "None"),
-                (Action)DeleteFirstHookProc, TriggerCondition.PRESSED);
-            RegisterControlKey("DeleteAllHooksKey", settings.GetValue<String>("CONTROL_KEYBOARD", "DeleteAllHooksKey", "None"),
-                (Action)DeleteAllHooks, TriggerCondition.PRESSED);
-
-            RegisterControlKey("WindLastHookRopeKey", settings.GetValue<String>("CONTROL_KEYBOARD", "WindLastHookRopeKey", "None"),
-                (Action)(() => SetLastHookRopeWindingProc(true)), TriggerCondition.HELD);
-            RegisterControlKey("WindAllHookRopesKey", settings.GetValue<String>("CONTROL_KEYBOARD", "WindAllHookRopesKey", "None"),
-                (Action)(() => SetAllHookRopesWindingProc(true)), TriggerCondition.HELD);
-            RegisterControlKey("UnwindLastHookRopeKey", settings.GetValue<String>("CONTROL_KEYBOARD", "UnwindLastHookRopeKey", "None"),
-                (Action)(() => SetLastHookRopeUnwindingProc(true)), TriggerCondition.HELD);
-            RegisterControlKey("UnwindAllHookRopesKey", settings.GetValue<String>("CONTROL_KEYBOARD", "UnwindAllHookRopesKey", "None"),
-                (Action)(() => SetAllHookRopesUnwindingProc(true)), TriggerCondition.HELD);
-
-            //registerControlKey("ToggleSolidRopesKey", settings.GetValue<String>("CONTROL_KEYBOARD", "ToggleSolidRopesKey", "None"),
-            //    (Action)ToggleSolidRopesProc, TriggerCondition.PRESSED);
-            //registerControlKey("IncreaseMinRopeLengthKey", settings.GetValue<String>("CONTROL_KEYBOARD", "IncreaseMinRopeLengthKey", "None"),
-            //    (Action)(() => IncrementMinRopeLength(false)), TriggerCondition.HELD);
-            //registerControlKey("DecreaseMinRopeLengthKey", settings.GetValue<String>("CONTROL_KEYBOARD", "DecreaseMinRopeLengthKey", "None"),
-            //    (Action)(() => IncrementMinRopeLength(true)), TriggerCondition.HELD);
-
-            RegisterControlKey("ApplyForceKey", settings.GetValue<String>("CONTROL_KEYBOARD", "ApplyForceKey", "None"),
-                (Action)(() => ApplyForceAtAimedProc(false)), (ContinuousForce ? TriggerCondition.HELD : TriggerCondition.PRESSED));
-            RegisterControlKey("ApplyInvertedForceKey", settings.GetValue<String>("CONTROL_KEYBOARD", "ApplyInvertedForceKey", "None"),
-                (Action)(() => ApplyForceAtAimedProc(true)), (ContinuousForce ? TriggerCondition.HELD : TriggerCondition.PRESSED));
-
-            RegisterControlKey("IncreaseForceKey", settings.GetValue<String>("CONTROL_KEYBOARD", "IncreaseForceKey", "None"),
-                (Action)(() => IncrementForceProc(false)), TriggerCondition.HELD);
-            RegisterControlKey("DecreaseForceKey", settings.GetValue<String>("CONTROL_KEYBOARD", "DecreaseForceKey", "None"),
-                (Action)(() => IncrementForceProc(true)), TriggerCondition.HELD);
-            RegisterControlKey("ApplyForceObjectPairKey", settings.GetValue<String>("CONTROL_KEYBOARD", "ApplyForceObjectPairKey", "None"),
-                (Action)ApplyForceObjectPairProc, TriggerCondition.PRESSED);
-            RegisterControlKey("ApplyForcePlayerKey", settings.GetValue<String>("CONTROL_KEYBOARD", "ApplyForcePlayerKey", "None"),
-                (Action)ApplyForcePlayerProc, (ContinuousForce ? TriggerCondition.HELD : TriggerCondition.PRESSED));
-
-            RegisterControlKey("ToggleBalloonHookModeKey", settings.GetValue<String>("CONTROL_KEYBOARD", "ToggleBalloonHookModeKey", "None"),
-                (Action)ToggleBalloonHookModeProc, TriggerCondition.PRESSED);
-            RegisterControlKey("IncreaseBalloonUpForceKey", settings.GetValue<String>("CONTROL_KEYBOARD", "IncreaseBalloonUpForceKey", "None"),
-                (Action)(() => IncrementBalloonUpForce(false)), TriggerCondition.HELD);
-            RegisterControlKey("DecreaseBalloonUpForceKey", settings.GetValue<String>("CONTROL_KEYBOARD", "DecreaseBalloonUpForceKey", "None"),
-                (Action)(() => IncrementBalloonUpForce(true)), TriggerCondition.HELD);
-
-            RegisterControlKey("AttachMultiTransportHooksKey", settings.GetValue<String>("CONTROL_KEYBOARD", "AttachMultiTransportHooksKey", "None"),
-                (Action)delegate { AttachTransportHooksProc(TransportHookType.MULTIPLE); }, TriggerCondition.PRESSED);
-            RegisterControlKey("AttachSingleTransportHookKey", settings.GetValue<String>("CONTROL_KEYBOARD", "AttachSingleTransportHookKey", "None"),
-                (Action)delegate { AttachTransportHooksProc(TransportHookType.SINGLE); }, TriggerCondition.PRESSED);
-
-            RegisterControlKey("NextTransportHookFilterKey", settings.GetValue<String>("CONTROL_KEYBOARD", "NextTransportHookFilterKey", "None"),
-                (Action)delegate { CycleTransportHookFilterProc(true); }, TriggerCondition.PRESSED);
-
-            RegisterControlKey("NextTransportHookModeKey", settings.GetValue<String>("CONTROL_KEYBOARD", "NextTransportHookModeKey", "None"),
-                (Action)delegate { CycleTransportHookModeProc(true); }, TriggerCondition.PRESSED);
-
 
             RegisterControlKey("ToggleDebugInfoKey", settings.GetValue<String>("DEV_STUFF", "ToggleDebugInfoKey", "None"),
             (Action)delegate { DebugMode = !DebugMode; }, TriggerCondition.PRESSED);
+           
+            //RegisterControlKey("ToggleTestAction1Key", settings.GetValue<String>("DEV_STUFF", "ToggleTestAction1Key", "None"),
+            //(Action)delegate { TestAction1 = !TestAction1; }, TriggerCondition.PRESSED);
+            //RegisterControlKey("ToggleTestAction2Key", settings.GetValue<String>("DEV_STUFF", "ToggleTestAction2Key", "None"),
+            //(Action)delegate { ThisIsATestFunction(); }, TriggerCondition.PRESSED);
+
+
+            if (ENABLE_ROPE_MODULE)
+            {
+                RegisterControlKey("MultipleObjectSelectionKey", settings.GetValue<String>("CONTROL_KEYBOARD", "MultipleObjectSelectionKey", "None"),
+                        (Action)MultipleObjectSelectionProc, TriggerCondition.PRESSED);
+
+                RegisterControlKey("AttachPlayerToEntityKey", settings.GetValue<String>("CONTROL_KEYBOARD", "AttachPlayerToEntityKey", "None"),
+                    (Action)AttachPlayerToEntityProc, TriggerCondition.PRESSED);
+                RegisterControlKey("AttachEntityToEntityKey", settings.GetValue<String>("CONTROL_KEYBOARD", "AttachEntityToEntityKey", "None"),
+                    (Action)AttachEntityToEntityRopeProc, TriggerCondition.PRESSED);
+                RegisterControlKey("DeleteLastHookKey", settings.GetValue<String>("CONTROL_KEYBOARD", "DeleteLastHookKey", "None"),
+                    (Action)DeleteLastHookProc, TriggerCondition.PRESSED);
+                RegisterControlKey("DeleteFirstHookKey", settings.GetValue<String>("CONTROL_KEYBOARD", "DeleteFirstHookKey", "None"),
+                    (Action)DeleteFirstHookProc, TriggerCondition.PRESSED);
+                RegisterControlKey("DeleteAllHooksKey", settings.GetValue<String>("CONTROL_KEYBOARD", "DeleteAllHooksKey", "None"),
+                    (Action)DeleteAllHooks, TriggerCondition.PRESSED);
+
+                //registerControlKey("ToggleSolidRopesKey", settings.GetValue<String>("CONTROL_KEYBOARD", "ToggleSolidRopesKey", "None"),
+                //    (Action)ToggleSolidRopesProc, TriggerCondition.PRESSED);
+                //registerControlKey("IncreaseMinRopeLengthKey", settings.GetValue<String>("CONTROL_KEYBOARD", "IncreaseMinRopeLengthKey", "None"),
+                //    (Action)(() => IncrementMinRopeLength(false)), TriggerCondition.HELD);
+                //registerControlKey("DecreaseMinRopeLengthKey", settings.GetValue<String>("CONTROL_KEYBOARD", "DecreaseMinRopeLengthKey", "None"),
+                //    (Action)(() => IncrementMinRopeLength(true)), TriggerCondition.HELD);
+
+                RegisterControlKey("WindLastHookRopeKey", settings.GetValue<String>("CONTROL_KEYBOARD", "WindLastHookRopeKey", "None"),
+                    (Action)(() => SetLastHookRopeWindingProc(true)), TriggerCondition.HELD);
+                RegisterControlKey("WindAllHookRopesKey", settings.GetValue<String>("CONTROL_KEYBOARD", "WindAllHookRopesKey", "None"),
+                    (Action)(() => SetAllHookRopesWindingProc(true)), TriggerCondition.HELD);
+                RegisterControlKey("UnwindLastHookRopeKey", settings.GetValue<String>("CONTROL_KEYBOARD", "UnwindLastHookRopeKey", "None"),
+                    (Action)(() => SetLastHookRopeUnwindingProc(true)), TriggerCondition.HELD);
+                RegisterControlKey("UnwindAllHookRopesKey", settings.GetValue<String>("CONTROL_KEYBOARD", "UnwindAllHookRopesKey", "None"),
+                    (Action)(() => SetAllHookRopesUnwindingProc(true)), TriggerCondition.HELD); 
+            }
+
+
+            if (ENABLE_FORCE_MODULE)
+            {
+                RegisterControlKey("ApplyForceKey", settings.GetValue<String>("CONTROL_KEYBOARD", "ApplyForceKey", "None"),
+                        (Action)(() => ApplyForceAtAimedProc(false)), (ContinuousForce ? TriggerCondition.HELD : TriggerCondition.PRESSED));
+                RegisterControlKey("ApplyInvertedForceKey", settings.GetValue<String>("CONTROL_KEYBOARD", "ApplyInvertedForceKey", "None"),
+                    (Action)(() => ApplyForceAtAimedProc(true)), (ContinuousForce ? TriggerCondition.HELD : TriggerCondition.PRESSED));
+                RegisterControlKey("IncreaseForceKey", settings.GetValue<String>("CONTROL_KEYBOARD", "IncreaseForceKey", "None"),
+                    (Action)(() => IncrementForceProc(false)), TriggerCondition.HELD);
+                RegisterControlKey("DecreaseForceKey", settings.GetValue<String>("CONTROL_KEYBOARD", "DecreaseForceKey", "None"),
+                    (Action)(() => IncrementForceProc(true)), TriggerCondition.HELD);
+                RegisterControlKey("ApplyForceObjectPairKey", settings.GetValue<String>("CONTROL_KEYBOARD", "ApplyForceObjectPairKey", "None"),
+                    (Action)ApplyForceObjectPairProc, TriggerCondition.PRESSED);
+                RegisterControlKey("ApplyForcePlayerKey", settings.GetValue<String>("CONTROL_KEYBOARD", "ApplyForcePlayerKey", "None"),
+                    (Action)ApplyForcePlayerProc, (ContinuousForce ? TriggerCondition.HELD : TriggerCondition.PRESSED));
+
+                RegisterControlKey("ToggleBalloonHookModeKey", settings.GetValue<String>("CONTROL_KEYBOARD", "ToggleBalloonHookModeKey", "None"),
+                    (Action)ToggleBalloonHookModeProc, TriggerCondition.PRESSED);
+                RegisterControlKey("IncreaseBalloonUpForceKey", settings.GetValue<String>("CONTROL_KEYBOARD", "IncreaseBalloonUpForceKey", "None"),
+                    (Action)(() => IncrementBalloonUpForce(false)), TriggerCondition.HELD);
+                RegisterControlKey("DecreaseBalloonUpForceKey", settings.GetValue<String>("CONTROL_KEYBOARD", "DecreaseBalloonUpForceKey", "None"),
+                    (Action)(() => IncrementBalloonUpForce(true)), TriggerCondition.HELD); 
+            }
+
+
+            if (ENABLE_TRANSPORT_MODULE)
+            {
+                RegisterControlKey("AttachMultiTransportHooksKey", settings.GetValue<String>("CONTROL_KEYBOARD", "AttachMultiTransportHooksKey", "None"),
+                        (Action)delegate { AttachTransportHooksProc(TransportHookType.MULTIPLE); }, TriggerCondition.PRESSED);
+                RegisterControlKey("AttachSingleTransportHookKey", settings.GetValue<String>("CONTROL_KEYBOARD", "AttachSingleTransportHookKey", "None"),
+                    (Action)delegate { AttachTransportHooksProc(TransportHookType.SINGLE); }, TriggerCondition.PRESSED);
+                RegisterControlKey("NextTransportHookFilterKey", settings.GetValue<String>("CONTROL_KEYBOARD", "NextTransportHookFilterKey", "None"),
+                    (Action)delegate { CycleTransportHookFilterProc(true); }, TriggerCondition.PRESSED);
+                RegisterControlKey("NextTransportHookModeKey", settings.GetValue<String>("CONTROL_KEYBOARD", "NextTransportHookModeKey", "None"),
+                    (Action)delegate { CycleTransportHookModeProc(true); }, TriggerCondition.PRESSED); 
+            }
+            
         }
 
         public static void InitControllerButtonsFromConfig(ScriptSettings settings)
