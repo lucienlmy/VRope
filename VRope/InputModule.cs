@@ -29,11 +29,15 @@ namespace VRope
 
             RegisterControlKey("ToggleDebugInfoKey", settings.GetValue<String>("DEV_STUFF", "ToggleDebugInfoKey", "None"),
             (Action)delegate { DebugMode = !DebugMode; }, TriggerCondition.PRESSED);
-           
-            //RegisterControlKey("ToggleTestAction1Key", settings.GetValue<String>("DEV_STUFF", "ToggleTestAction1Key", "None"),
-            //(Action)delegate { TestAction1 = !TestAction1; }, TriggerCondition.PRESSED);
-            //RegisterControlKey("ToggleTestAction2Key", settings.GetValue<String>("DEV_STUFF", "ToggleTestAction2Key", "None"),
-            //(Action)delegate { ThisIsATestFunction(); }, TriggerCondition.PRESSED);
+
+            RegisterControlKey("ToggleTestAction1Key", settings.GetValue<String>("DEV_STUFF", "ToggleTestAction1Key", "None"),
+            (Action)delegate { TestAction1 = !TestAction1; }, TriggerCondition.PRESSED);
+            RegisterControlKey("ToggleTestAction2Key", settings.GetValue<String>("DEV_STUFF", "ToggleTestAction2Key", "None"),
+            (Action)delegate { ThisIsATestFunction(); }, TriggerCondition.PRESSED);
+
+
+            RegisterControlKey("DeleteAllHooksKey", settings.GetValue<String>("CONTROL_KEYBOARD", "DeleteAllHooksKey", "None"),
+                (Action)DeleteAllHooks, TriggerCondition.PRESSED);
 
 
             if (ENABLE_ROPE_MODULE)
@@ -45,12 +49,11 @@ namespace VRope
                     (Action)AttachPlayerToEntityProc, TriggerCondition.PRESSED);
                 RegisterControlKey("AttachEntityToEntityKey", settings.GetValue<String>("CONTROL_KEYBOARD", "AttachEntityToEntityKey", "None"),
                     (Action)AttachEntityToEntityRopeProc, TriggerCondition.PRESSED);
+
                 RegisterControlKey("DeleteLastHookKey", settings.GetValue<String>("CONTROL_KEYBOARD", "DeleteLastHookKey", "None"),
-                    (Action)DeleteLastHookProc, TriggerCondition.PRESSED);
+                   (Action)DeleteLastHookProc, TriggerCondition.PRESSED);
                 RegisterControlKey("DeleteFirstHookKey", settings.GetValue<String>("CONTROL_KEYBOARD", "DeleteFirstHookKey", "None"),
                     (Action)DeleteFirstHookProc, TriggerCondition.PRESSED);
-                RegisterControlKey("DeleteAllHooksKey", settings.GetValue<String>("CONTROL_KEYBOARD", "DeleteAllHooksKey", "None"),
-                    (Action)DeleteAllHooks, TriggerCondition.PRESSED);
 
                 //registerControlKey("ToggleSolidRopesKey", settings.GetValue<String>("CONTROL_KEYBOARD", "ToggleSolidRopesKey", "None"),
                 //    (Action)ToggleSolidRopesProc, TriggerCondition.PRESSED);
@@ -100,6 +103,8 @@ namespace VRope
                         (Action)delegate { AttachTransportHooksProc(TransportHookType.MULTIPLE); }, TriggerCondition.PRESSED);
                 RegisterControlKey("AttachSingleTransportHookKey", settings.GetValue<String>("CONTROL_KEYBOARD", "AttachSingleTransportHookKey", "None"),
                     (Action)delegate { AttachTransportHooksProc(TransportHookType.SINGLE); }, TriggerCondition.PRESSED);
+                RegisterControlKey("AttachPreciseTransportHookKey", settings.GetValue<String>("CONTROL_KEYBOARD", "AttachPreciseTransportHookKey", "None"),
+                    (Action)delegate { AttachTransportHooksProc(TransportHookType.PRECISE); }, TriggerCondition.PRESSED);
                 RegisterControlKey("NextTransportHookFilterKey", settings.GetValue<String>("CONTROL_KEYBOARD", "NextTransportHookFilterKey", "None"),
                     (Action)delegate { CycleTransportHookFilterProc(true); }, TriggerCondition.PRESSED);
                 RegisterControlKey("NextTransportHookModeKey", settings.GetValue<String>("CONTROL_KEYBOARD", "NextTransportHookModeKey", "None"),

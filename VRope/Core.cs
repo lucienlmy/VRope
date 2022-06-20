@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using GTA;
+using GTA.Native;
 
 /*
  * 
@@ -112,6 +112,8 @@ namespace VRope
         public static int CurrentTransportHookModeIndex = 1;
         public static int TransportEntitiesRadius = 32;
 
+        public static bool TestAction1 = false;
+
         //public static Stopwatch Watch = new Stopwatch();
 
         public static String GetErrorMessage(Exception exc)
@@ -177,16 +179,54 @@ namespace VRope
 
             UI.Notify("VRope 'No Subtitles' Mode " + (NoSubtitlesMode ? "[Enabled]." : "(Disabled)."));
         }
-    
-    
-        //public static void ThisIsATestFunction()
-        //{
-        //    if (TestAction1 && Game.Player.Character.IsInVehicle() && !Util.IsPlayerSittingInFlyingVehicle())
-        //    {
-        //        Vehicle vehicle = Util.GetVehiclePlayerIsIn();
 
-        //        vehicle.ApplyForce(Util.AsVector(0f, 0f, 0.01f) * 1000.0f);
-        //    }
-        //}
+
+        public static void ThisIsATestFunction()
+        {
+            if(Game.Player.IsAlive)
+            {
+                //RaycastResult rayResult = Util.CameraRaycastForward();
+                //Entity targetEntity = null;
+                //int fireChildren = 10;
+                //bool gasFire = false;
+
+                //if(rayResult.DitHitAnything)
+                //{
+                //    if (Util.GetEntityPlayerIsAimingAt(ref targetEntity))
+                //    {
+                //        //Vector3 zAxisDown = new Vector3(0f, 0f, -0.01f);
+
+                //        if (Util.IsNPCPed(targetEntity))
+                //        {
+                //            Ped ped = (Ped)targetEntity;
+
+                //            Util.MakePedRagdoll(ped, 2000);
+
+                //            Function.Call(Hash.START_ENTITY_FIRE, ped.Handle);
+                //        }
+                //        else
+                //        {
+                //            Vector3 pos = rayResult.HitCoords;
+
+                //            Function.Call(Hash.START_SCRIPT_FIRE, pos.X, pos.Y, pos.Z, fireChildren, gasFire);
+                //        }
+
+                //    }
+                //    else
+                //    {
+                //        Vector3 pos = rayResult.HitCoords;
+
+                //        Function.Call(Hash.START_SCRIPT_FIRE, pos.X, pos.Y, pos.Z, fireChildren, gasFire);
+                //    }
+                //}
+
+                Ped[] peds = World.GetNearbyPeds(Game.Player.Character.Position, 15);
+
+                for(int i=0; i<peds.Length; i++)
+                {
+                    Function.Call(Hash.START_ENTITY_FIRE, peds[i].Handle);
+                }
+            }
+        }
     }
 }

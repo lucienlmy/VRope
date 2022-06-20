@@ -41,7 +41,7 @@ namespace VRope
             Pair.Make( TransportHookMode.CENTER, "{ Center }"),
             Pair.Make( TransportHookMode.LEFT_RIGHT, "{ Left/Right }"),
             Pair.Make( TransportHookMode.FRONT_BACK, "{ Front/Back }" ),
-            //Pair.Make( TransportHookMode.CROSS, "{ Cross }" )
+            Pair.Make( TransportHookMode.CROSS, "{ Cross }" )
         };
 
         public static void CycleTransportHookFilterProc(bool nextFilter = true)
@@ -194,8 +194,8 @@ namespace VRope
                             CreateTransportHookLeftRightMode(transHook); break;
                         case TransportHookMode.FRONT_BACK:
                             CreateTransportHookFrontBackMode(transHook); break;
-                        //case TransportHookMode.CROSS:
-                        //    CreateTransportHookCrossMode(transHook); break;
+                        case TransportHookMode.CROSS:
+                            CreateTransportHookCrossMode(transHook); break;
 
                     }
                 }
@@ -286,16 +286,16 @@ namespace VRope
                 nearbyEntities.Add(GetNearestTransportEntity(playerAirVehicle.Position, TransportEntitiesRadius));
                 //nearbyEntities.AddRange(World.GetNearbyEntities(playerAirVehicle.Position, TransportEntitiesRadius));
             }
-            //else if (hookType == TransportHookType.PRECISE)
-            //{
-            //    RaycastResult rayResult = World.RaycastCapsule(playerAirVehicle.Position, (-playerAirVehicle.UpVector),
-            //                                (TransportEntitiesRadius * 2f), 3f, IntersectOptions.Everything);
+            else if (hookType == TransportHookType.PRECISE)
+            {
+                RaycastResult rayResult = World.RaycastCapsule(playerAirVehicle.Position, (-playerAirVehicle.UpVector),
+                                            (TransportEntitiesRadius * 2f), 3f, IntersectOptions.Everything, playerAirVehicle);
 
-            //    if (rayResult.DitHitEntity)
-            //    {
-            //        nearbyEntities.Add(rayResult.HitEntity);
-            //    }
-            //}
+                if (rayResult.DitHitEntity)
+                {
+                    nearbyEntities.Add(rayResult.HitEntity);
+                }
+            }
 
             return nearbyEntities;
         }
@@ -371,7 +371,7 @@ namespace VRope
             RaycastResult rayLeft = World.Raycast(raySourceLeft, transHook.entity2.RightVector, 7.0f, IntersectOptions.Everything, playerVehicle);
             RaycastResult rayRight = World.Raycast(raySourceRight, -transHook.entity2.RightVector, 7.0f, IntersectOptions.Everything, playerVehicle);
 
-            Vector3 heightOffset = (transHook.entity2.UpVector * entityDimensions.Z * 0.5f);
+            Vector3 heightOffset = (transHook.entity2.UpVector * entityDimensions.Z * 0.44f);
 
             if (rayLeft.DitHitEntity && rayLeft.HitEntity == transHook.entity2 &&
                rayRight.DitHitEntity && rayRight.HitEntity == transHook.entity2)
@@ -411,15 +411,40 @@ namespace VRope
             hook1.hookOffset1 = -playerHookOffset;
             hook2.hookOffset1 = playerHookOffset;
 
-            
-            Vector3 hookOffsetFront = (-transHook.entity2.ForwardVector * (entityDimensions.X / 1.9f))
-                                   + (transHook.entity2.UpVector * (entityDimensions.Z * 0.6f));
+            float xDimensionScale = 0.90f;
+            float zDimensionScale = 0.44f;
 
-            Vector3 hookOffsetBack = (transHook.entity2.ForwardVector * (entityDimensions.X / 1.9f))
-                                  + (transHook.entity2.UpVector * (entityDimensions.Z * 0.6f));
+            Vector3 frontHookOffset = (transHook.entity2.ForwardVector * (entityDimensions.X * xDimensionScale))
+                                    + (transHook.entity2.UpVector * (entityDimensions.Z * zDimensionScale));
 
-            hook1.hookOffset2 = hookOffsetFront;
-            hook2.hookOffset2 = hookOffsetBack;
+            Vector3 backHookOffset = (-transHook.entity2.ForwardVector * (entityDimensions.X * xDimensionScale))
+                                    + (transHook.entity2.UpVector * (entityDimensions.Z * zDimensionScale));
+
+
+            //Vector3 raySourceFront = transHook.entity2.Position + frontHookOffset;
+            //Vector3 raySourceBack = transHook.entity2.Position + backHookOffset;
+                                  //+ (transHook.entity2.UpVector * (entityDimensions.Z * zDimensionScale));
+
+            //RaycastResult rayFront = World.Raycast(raySourceFront, -transHook.entity2.ForwardVector, 7.0f, IntersectOptions.Everything, playerVehicle);
+            //RaycastResult rayBack = World.Raycast(raySourceBack, transHook.entity2.ForwardVector, 7.0f, IntersectOptions.Everything, playerVehicle);
+
+            //if (rayFront.DitHitEntity && rayFront.HitEntity == transHook.entity2 &&
+            //   rayBack.DitHitEntity && rayBack.HitEntity == transHook.entity2)
+            //{
+            //    hook1.hookOffset2 = rayFront.HitCoords - transHook.entity2.Position;
+            //    hook2.hookOffset2 = rayBack.HitCoords - transHook.entity2.Position;
+            //}
+            //else
+            {
+                //if (DebugMode)
+                //    UI.Notify("Failed F/B Raycast Hook");
+
+                hook1.hookOffset2 = (-transHook.entity2.ForwardVector * (entityDimensions.X * xDimensionScale)) + 
+                    (transHook.entity2.UpVector * (entityDimensions.Z * zDimensionScale));
+
+                hook2.hookOffset2 = (transHook.entity2.ForwardVector * (entityDimensions.X * xDimensionScale)) +
+                    (transHook.entity2.UpVector * (entityDimensions.Z * zDimensionScale));
+            }
 
             float rope1Length = (hook1.entity1.Position + hook1.hookOffset1).DistanceTo(hook1.entity2.Position + hook1.hookOffset2);
             float rope2Length = (hook2.entity1.Position + hook1.hookOffset1).DistanceTo(hook2.entity2.Position + hook1.hookOffset2);

@@ -338,8 +338,7 @@ namespace VRope
 
                     entity.ApplyForce(zAxis * 5.0f);
                 }
-
-                if (Util.IsPed(entity))
+                else if (Util.IsPed(entity))
                 {
                     Vector3 zAxis = new Vector3(0f, 0.01f, 0f);
 
@@ -353,7 +352,7 @@ namespace VRope
                     //Vehicle playerVehicle = Util.GetVehiclePlayerIsIn();
                     Vector3 zAxisDown = new Vector3(0f, 0f, -0.01f);
 
-                    entity.ApplyForce(zAxisDown * 40.0f);
+                    entity.ApplyForce(zAxisDown * 43.0f);
 
                     //entity.Rotation = new Vector3(entity.Rotation.X, entity.Rotation.Y, playerVehicle.Rotation.Z);
                 }
@@ -423,8 +422,8 @@ namespace VRope
 
                 DebugInfo += "\n Player[" + " Speed(" + Game.Player.Character.Velocity.Length().ToString(format) + ")," +
                             " Position(X:" + ppos.X.ToString(format) + ", Y:" + ppos.Y.ToString(format) + ", Z:" + ppos.Z.ToString(format) + ") ]"
-                            + "\nHookedPeds(" + HookedPedCount + ")"
-                            + " Clock(" + DateTime.Now.ToString("HH:mm:ss") + ")";
+                            //+ "\nHookedPeds(" + HookedPedCount + ")"
+                            + "\nClock(" + DateTime.Now.ToString("HH:mm:ss") + ")";
             }
         }
 
