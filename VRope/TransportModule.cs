@@ -17,7 +17,7 @@ namespace VRope
     {
         private const int SUBTITLE_DURATION = 500; //ms
 
-        private const float TRANSPORTED_ENTITY_UPVECTOR_MULT = 0.7f;
+        //private const float TRANSPORTED_ENTITY_UPVECTOR_MULT = 0.7f;
 
         public enum TransportHookType
         {
@@ -33,7 +33,7 @@ namespace VRope
             LEFT_RIGHT,
             FRONT_BACK,
             CROSS,
-            HEXAGON
+            //HEXAGON
         }
 
         public readonly static Pair<TransportHookMode, String>[] AllTransportHookModes =
@@ -357,23 +357,33 @@ namespace VRope
             HookPair hook1 = new HookPair(transHook);
             HookPair hook2 = new HookPair(transHook);
 
-            Vector3 playerHookOffset = playerVehicle.RightVector * 1.2f;
+            Vector3 playerHookOffset = playerVehicle.RightVector;
+            float zDimensionScale = 0.44f;
 
             hook1.hookOffset1 = -playerHookOffset;
             hook2.hookOffset1 = playerHookOffset;
 
             Vector3 raySourceLeft = transHook.entity2.Position +
-                                    (-transHook.entity2.RightVector * (entityDimensions.Y / 5.0f));
+                                    (-transHook.entity2.RightVector * (entityDimensions.Y * 0.25f));
 
             Vector3 raySourceRight = transHook.entity2.Position +
-                                    (transHook.entity2.RightVector * (entityDimensions.Y / 5.0f));
+                                    (transHook.entity2.RightVector * (entityDimensions.Y * 0.25f));
 
-            RaycastResult rayLeft = World.Raycast(raySourceLeft, transHook.entity2.RightVector, 7.0f, IntersectOptions.Everything, playerVehicle);
-            RaycastResult rayRight = World.Raycast(raySourceRight, -transHook.entity2.RightVector, 7.0f, IntersectOptions.Everything, playerVehicle);
+            Vector3 rayLeftDirection = transHook.entity2.RightVector;
+            Vector3 rayRightDirection = -transHook.entity2.RightVector;
 
-            Vector3 heightOffset = (transHook.entity2.UpVector * entityDimensions.Z * 0.44f);
+            if (Util.isPlane(transHook.entity2) || Util.isHeli(transHook.entity2))
+            {
+                zDimensionScale = -0.1f;
+            }
 
-            if (rayLeft.DitHitEntity && rayLeft.HitEntity == transHook.entity2 &&
+            RaycastResult rayLeft = World.Raycast(raySourceLeft, rayLeftDirection, 7.0f, IntersectOptions.Everything, playerVehicle);
+            RaycastResult rayRight = World.Raycast(raySourceRight, rayRightDirection, 7.0f, IntersectOptions.Everything, playerVehicle);
+
+            Vector3 heightOffset = (transHook.entity2.UpVector * entityDimensions.Z * zDimensionScale);
+
+            if (!Util.isPlane(transHook.entity2) && !Util.isHeli(transHook.entity2) &&
+                rayLeft.DitHitEntity && rayLeft.HitEntity == transHook.entity2 &&
                rayRight.DitHitEntity && rayRight.HitEntity == transHook.entity2)
             {
                 hook1.hookOffset2 = rayLeft.HitCoords - transHook.entity2.Position + heightOffset;
@@ -384,8 +394,8 @@ namespace VRope
                 if (DebugMode)
                     UI.Notify("Failed L/R Raycast Hook");
 
-                hook1.hookOffset2 = (-transHook.entity2.RightVector * (entityDimensions.Y / 5.0f)) + heightOffset;
-                hook2.hookOffset2 = (transHook.entity2.RightVector * (entityDimensions.Y / 5.0f)) + heightOffset;
+                hook1.hookOffset2 = (-transHook.entity2.RightVector * (entityDimensions.Y * 0.2f)) + heightOffset;
+                hook2.hookOffset2 = (transHook.entity2.RightVector * (entityDimensions.Y * 0.2f)) + heightOffset;
             }
 
             float rope1Length = (hook1.entity1.Position + hook1.hookOffset1).DistanceTo(hook1.entity2.Position + hook1.hookOffset2);
@@ -411,39 +421,44 @@ namespace VRope
             hook1.hookOffset1 = -playerHookOffset;
             hook2.hookOffset1 = playerHookOffset;
 
-            float xDimensionScale = 0.90f;
+            float xDimensionScale = 0.85f;
             float zDimensionScale = 0.44f;
 
-            Vector3 frontHookOffset = (transHook.entity2.ForwardVector * (entityDimensions.X * xDimensionScale))
-                                    + (transHook.entity2.UpVector * (entityDimensions.Z * zDimensionScale));
-
-            Vector3 backHookOffset = (-transHook.entity2.ForwardVector * (entityDimensions.X * xDimensionScale))
-                                    + (transHook.entity2.UpVector * (entityDimensions.Z * zDimensionScale));
-
-
-            //Vector3 raySourceFront = transHook.entity2.Position + frontHookOffset;
-            //Vector3 raySourceBack = transHook.entity2.Position + backHookOffset;
-                                  //+ (transHook.entity2.UpVector * (entityDimensions.Z * zDimensionScale));
-
-            //RaycastResult rayFront = World.Raycast(raySourceFront, -transHook.entity2.ForwardVector, 7.0f, IntersectOptions.Everything, playerVehicle);
-            //RaycastResult rayBack = World.Raycast(raySourceBack, transHook.entity2.ForwardVector, 7.0f, IntersectOptions.Everything, playerVehicle);
-
-            //if (rayFront.DitHitEntity && rayFront.HitEntity == transHook.entity2 &&
-            //   rayBack.DitHitEntity && rayBack.HitEntity == transHook.entity2)
-            //{
-            //    hook1.hookOffset2 = rayFront.HitCoords - transHook.entity2.Position;
-            //    hook2.hookOffset2 = rayBack.HitCoords - transHook.entity2.Position;
-            //}
-            //else
+            if (Util.isPlane(transHook.entity2) ||
+                Util.isHeli(transHook.entity2))
             {
-                //if (DebugMode)
-                //    UI.Notify("Failed F/B Raycast Hook");
+                xDimensionScale = 0.4f;
+                zDimensionScale = 0.3f;
+            }
 
-                hook1.hookOffset2 = (-transHook.entity2.ForwardVector * (entityDimensions.X * xDimensionScale)) + 
-                    (transHook.entity2.UpVector * (entityDimensions.Z * zDimensionScale));
+            Vector3 frontHookOffset = (-transHook.entity2.ForwardVector * (entityDimensions.X * xDimensionScale))
+                                    + (transHook.entity2.UpVector * (entityDimensions.Z * zDimensionScale));
 
-                hook2.hookOffset2 = (transHook.entity2.ForwardVector * (entityDimensions.X * xDimensionScale)) +
-                    (transHook.entity2.UpVector * (entityDimensions.Z * zDimensionScale));
+            Vector3 backHookOffset = (transHook.entity2.ForwardVector * (entityDimensions.X * xDimensionScale))
+                                    + (transHook.entity2.UpVector * (entityDimensions.Z * zDimensionScale));
+
+
+            Vector3 raySourceFront = transHook.entity2.Position + frontHookOffset;
+            Vector3 raySourceBack = transHook.entity2.Position + backHookOffset;
+
+            RaycastResult rayFront = World.Raycast(raySourceFront, -transHook.entity2.UpVector, 7.0f, IntersectOptions.Everything, playerVehicle);
+            RaycastResult rayBack = World.Raycast(raySourceBack, -transHook.entity2.UpVector, 7.0f, IntersectOptions.Everything, playerVehicle);
+
+            if (!Util.isPlane(transHook.entity2) && !Util.isHeli(transHook.entity2) &&
+                rayFront.DitHitEntity && rayFront.HitEntity == transHook.entity2 &&
+               rayBack.DitHitEntity && rayBack.HitEntity == transHook.entity2)
+            {
+                hook1.hookOffset2 = rayFront.HitCoords - transHook.entity2.Position;
+                hook2.hookOffset2 = rayBack.HitCoords - transHook.entity2.Position;
+            }
+            else
+            {
+                if (DebugMode)
+                    UI.Notify("Failed F/B Raycast Hook");
+
+                hook1.hookOffset2 = frontHookOffset;
+
+                hook2.hookOffset2 = backHookOffset;
             }
 
             float rope1Length = (hook1.entity1.Position + hook1.hookOffset1).DistanceTo(hook1.entity2.Position + hook1.hookOffset2);

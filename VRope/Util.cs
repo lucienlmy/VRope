@@ -371,5 +371,15 @@ namespace VRope
 
             return nearestEntity;
         }
+
+        public static bool isPlane(Entity e)
+        {
+            return (e != null && e.Model.IsPlane);
+        }
+
+        public static bool isHeli(Entity e)
+        {
+            return (e != null && e.Model.IsHelicopter);
+        }
     }
 }
