@@ -352,7 +352,7 @@ namespace VRope
                     //Vehicle playerVehicle = Util.GetVehiclePlayerIsIn();
                     Vector3 zAxisDown = new Vector3(0f, 0f, -0.01f);
 
-                    entity.ApplyForce(zAxisDown * 41.0f);
+                    entity.ApplyForce(zAxisDown * TransportVehicleDownForce);
 
                     //entity.Rotation = new Vector3(entity.Rotation.X, entity.Rotation.Y, playerVehicle.Rotation.Z);
                 }
@@ -423,7 +423,8 @@ namespace VRope
                 DebugInfo += "\n Player[" + " Speed(" + Game.Player.Character.Velocity.Length().ToString(format) + ")," +
                             " Position(X:" + ppos.X.ToString(format) + ", Y:" + ppos.Y.ToString(format) + ", Z:" + ppos.Z.ToString(format) + ") ]"
                             //+ "\nHookedPeds(" + HookedPedCount + ")"
-                            + "\nClock(" + DateTime.Now.ToString("HH:mm:ss") + ")";
+                            + "\nClock(" + DateTime.Now.ToString("HH:mm:ss") + ")"
+                            + " InFlyVehic(" + (Game.Player.Character.IsInFlyingVehicle.ToString()) + ")";
             }
         }
 
@@ -486,6 +487,8 @@ namespace VRope
 
                 CheckForKeysHeldDown();
                 CheckForKeysReleased();
+
+                CheckForGTAControlsPressed();
 
                 ProcessHooks();
 

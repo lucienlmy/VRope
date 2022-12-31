@@ -99,7 +99,6 @@ namespace VRope
             return isValid;
         }
 
-
         public static List<Keys> TranslateKeyDataToKeyList(String keyData)
         {
             if (keyData == null || keyData.Length == 0)

@@ -269,6 +269,9 @@ namespace VRope
 
             BalloonUpForce += increment * Game.LastFrameTime * 10.0f;
 
+            if (BalloonUpForce < 0.0f)
+                BalloonUpForce = 0.0f;
+
             SubQueue.AddSubtitle(333, "VRope Balloon Up Force: " + BalloonUpForce.ToString("0.00"), 220);
         }
 

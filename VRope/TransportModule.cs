@@ -89,10 +89,7 @@ namespace VRope
 
                 SubQueue.AddSubtitle(8809, "VRope Transport Hook Mode: " + AllTransportHookModes[CurrentTransportHookModeIndex].second, SUBTITLE_DURATION);
             }
-
         }
-
-
 
         //public static void CreateLandVehicleTransportHooks(TransportHookType hookType)
         //{
@@ -171,7 +168,6 @@ namespace VRope
                     transHook.entity1 = hookEntity1;
                     transHook.entity2 = entity;
 
-                    //if (!Util.IsPed(entity) && hookType == TransportHookType.SINGLE)
                     if (hookType == TransportHookType.SINGLE)
                     {
                         hookMode = AllTransportHookModes[CurrentTransportHookModeIndex].first;
@@ -196,7 +192,6 @@ namespace VRope
                             CreateTransportHookFrontBackMode(transHook); break;
                         case TransportHookMode.CROSS:
                             CreateTransportHookCrossMode(transHook); break;
-
                     }
                 }
             }
@@ -210,12 +205,13 @@ namespace VRope
         {
             try
             {
-                if (Game.Player.Character.IsAlive && Game.Player.Character.IsSittingInVehicle())
+                if (Game.Player.Character.IsAlive && Game.Player.Character.IsSittingInVehicle()
+                    && Game.Player.Character.IsInFlyingVehicle)
                 {
-                    if (Game.Player.Character.IsInFlyingVehicle)
-                    {
-                        CreateAirVehicleTransportHooks(hookType);
-                    }
+                    if (HookFilter.DefaultFilters[CurrentTransportHookFilterIndex].filterValue == "GTA.Prop")
+                        hookType = TransportHookType.SINGLE;
+
+                    CreateAirVehicleTransportHooks(hookType);
                 }
             }
             catch (Exception exc)
@@ -223,7 +219,6 @@ namespace VRope
                 UI.Notify("VRope AttachTransportHooks() Error:\n" + GetErrorMessage(exc));
             }
         }
-
 
 
         private static bool CheckTransportHookPermission(Entity entity)
@@ -382,21 +377,21 @@ namespace VRope
 
             Vector3 heightOffset = (transHook.entity2.UpVector * entityDimensions.Z * zDimensionScale);
 
-            if (!Util.isPlane(transHook.entity2) && !Util.isHeli(transHook.entity2) &&
-                rayLeft.DitHitEntity && rayLeft.HitEntity == transHook.entity2 &&
-               rayRight.DitHitEntity && rayRight.HitEntity == transHook.entity2)
-            {
-                hook1.hookOffset2 = rayLeft.HitCoords - transHook.entity2.Position + heightOffset;
-                hook2.hookOffset2 = rayRight.HitCoords - transHook.entity2.Position + heightOffset;
-            }
-            else
-            {
-                if (DebugMode)
-                    UI.Notify("Failed L/R Raycast Hook");
+            //if (!Util.isPlane(transHook.entity2) && !Util.isHeli(transHook.entity2) &&
+            //    rayLeft.DitHitEntity && rayLeft.HitEntity == transHook.entity2 &&
+            //   rayRight.DitHitEntity && rayRight.HitEntity == transHook.entity2)
+            //{
+            //    hook1.hookOffset2 = rayLeft.HitCoords - transHook.entity2.Position + heightOffset;
+            //    hook2.hookOffset2 = rayRight.HitCoords - transHook.entity2.Position + heightOffset;
+            //}
+            //else
+            //{
+            //    if (DebugMode)
+            //        UI.Notify("Failed L/R Raycast Hook");
 
                 hook1.hookOffset2 = (-transHook.entity2.RightVector * (entityDimensions.Y * 0.2f)) + heightOffset;
                 hook2.hookOffset2 = (transHook.entity2.RightVector * (entityDimensions.Y * 0.2f)) + heightOffset;
-            }
+            //}
 
             float rope1Length = (hook1.entity1.Position + hook1.hookOffset1).DistanceTo(hook1.entity2.Position + hook1.hookOffset2);
             float rope2Length = (hook2.entity1.Position + hook1.hookOffset1).DistanceTo(hook2.entity2.Position + hook1.hookOffset2);
@@ -476,6 +471,6 @@ namespace VRope
             CreateTransportHookFrontBackMode(transHook);
 
             CreateTransportHookLeftRightMode(transHook);
-        }
+        }        
     }
 }

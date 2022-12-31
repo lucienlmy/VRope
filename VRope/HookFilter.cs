@@ -16,13 +16,7 @@ namespace VRope
 
             new HookFilter("[ Vehicles ]","GTA.Vehicle"),
             new HookFilter("[ Peds ]","GTA.Ped"),
-            new HookFilter("[ Props ]","GTA.Prop"),
-
-            //new HookFilter("[ VEHICLES ] & [ PEDS ]","GTA.Vehicle | GTA.Ped"),
-            //new HookFilter("[ Peds ] & [ Props ]","GTA.Ped | GTA.Prop"),
-            //new HookFilter("[ Props ] & [ Vehicles ]","GTA.Prop | GTA.Vehicle"),
-
-            //new HookFilter("{ ALL }","GTA.Prop | GTA.Vehicle | GTA.Ped")
+            //new HookFilter("[ Props ]","GTA.Prop"),
         };
 
         public String label { get; }

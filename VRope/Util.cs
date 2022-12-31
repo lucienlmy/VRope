@@ -124,6 +124,11 @@ namespace VRope
             return Game.Player.IsAlive;
         }
 
+        public static bool IsPlayerSittingInVehicle()
+        {
+            return (Game.Player.Character.IsSittingInVehicle());
+        }
+
         public static bool IsPlayerSittingInFlyingVehicle()
         {
             return (Game.Player.Character.IsSittingInVehicle() && Game.Player.Character.IsInFlyingVehicle);

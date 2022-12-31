@@ -18,10 +18,6 @@ namespace VRope
         public TriggerCondition condition = TriggerCondition.NONE;
         public bool wasPressed = false;
 
-        public ControlKey()
-        {
-        }
-
         public ControlKey(string name, List<Keys> keys, Action callback, TriggerCondition condition)
         {
             this.name = name;

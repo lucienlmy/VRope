@@ -28,17 +28,15 @@ namespace VRope
                 (Action)ToggleNoSubtitlesModeProc, TriggerCondition.PRESSED);
 
             RegisterControlKey("ToggleDebugInfoKey", settings.GetValue<String>("DEV_STUFF", "ToggleDebugInfoKey", "None"),
-            (Action)delegate { DebugMode = !DebugMode; }, TriggerCondition.PRESSED);
+            (Action)delegate { DebugMode = !DebugMode; }, TriggerCondition.PRESSED, true);
 
             RegisterControlKey("ToggleTestAction1Key", settings.GetValue<String>("DEV_STUFF", "ToggleTestAction1Key", "None"),
-            (Action)delegate { TestAction1 = !TestAction1; }, TriggerCondition.PRESSED);
+            (Action)delegate { TestAction1 = !TestAction1; }, TriggerCondition.PRESSED, true);
             RegisterControlKey("ToggleTestAction2Key", settings.GetValue<String>("DEV_STUFF", "ToggleTestAction2Key", "None"),
-            (Action)delegate { ThisIsATestFunction(); }, TriggerCondition.PRESSED);
-
+            (Action)delegate { ThisIsATestFunction(); }, TriggerCondition.PRESSED, true);
 
             RegisterControlKey("DeleteAllHooksKey", settings.GetValue<String>("CONTROL_KEYBOARD", "DeleteAllHooksKey", "None"),
                 (Action)DeleteAllHooks, TriggerCondition.PRESSED);
-
 
             if (ENABLE_ROPE_MODULE)
             {
@@ -72,7 +70,6 @@ namespace VRope
                     (Action)(() => SetAllHookRopesUnwindingProc(true)), TriggerCondition.HELD); 
             }
 
-
             if (ENABLE_FORCE_MODULE)
             {
                 RegisterControlKey("ApplyForceKey", settings.GetValue<String>("CONTROL_KEYBOARD", "ApplyForceKey", "None"),
@@ -96,7 +93,6 @@ namespace VRope
                     (Action)(() => IncrementBalloonUpForce(true)), TriggerCondition.HELD); 
             }
 
-
             if (ENABLE_TRANSPORT_MODULE)
             {
                 RegisterControlKey("AttachMultiTransportHooksKey", settings.GetValue<String>("CONTROL_KEYBOARD", "AttachMultiTransportHooksKey", "None"),
@@ -110,7 +106,6 @@ namespace VRope
                 RegisterControlKey("NextTransportHookModeKey", settings.GetValue<String>("CONTROL_KEYBOARD", "NextTransportHookModeKey", "None"),
                     (Action)delegate { CycleTransportHookModeProc(true); }, TriggerCondition.PRESSED); 
             }
-            
         }
 
         public static void InitControllerButtonsFromConfig(ScriptSettings settings)
@@ -202,26 +197,30 @@ namespace VRope
         }
 
 
-        public static void RegisterControlKey(String name, String keyData, Action callback, TriggerCondition condition)
+        public static void RegisterControlKey(String name, String keyData, Action callback, TriggerCondition condition, bool ignoreInvalid = false)
         {
             List<Keys> keys = Keyboard.TranslateKeyDataToKeyList(keyData);
 
             if (keys.Count == 0)
             {
-                UI.Notify("VRope ControlKey Error:\n Key combination for \"" + name + "\" is invalid. \nThe control was disabled.");
+                if(!ignoreInvalid)
+                    UI.Notify("VRope ControlKey Error:\n Key combination for \"" + name + "\" is invalid. \nThe control was disabled.");
+
                 return;
             }
 
             ControlKeys.Add(new ControlKey(name, keys, callback, condition));
         }
 
-        public static void RegisterControlButton(String name, String buttonData, Action callback, TriggerCondition condition)
+        public static void RegisterControlButton(String name, String buttonData, Action callback, TriggerCondition condition, bool ignoreInvalid = false)
         {
             ControllerState buttonState = XBoxController.TranslateButtonStringToButtonData(buttonData);
 
             if (buttonState.buttonPressedCount == -1)
             {
-                UI.Notify("VRope ControlButton Error:\n Button combination for \"" + name + "\" is invalid. \nThe control was disabled.");
+                if(!ignoreInvalid)
+                    UI.Notify("VRope ControlButton Error:\n Button combination for \"" + name + "\" is invalid. \nThe control was disabled.");
+
                 return;
             }
 
@@ -263,6 +262,17 @@ namespace VRope
                         control.wasPressed = false;
                         //break;
                     }
+                }
+            }
+        }
+
+        public static void CheckForGTAControlsPressed()
+        {
+            if(Game.Player.Character.IsAlive && Game.Player.Character.IsInFlyingVehicle)
+            {
+                if(Game.IsControlJustPressed(0, GTA.Control.VehicleExit))
+                {
+                    DeleteAllHooks();
                 }
             }
         }

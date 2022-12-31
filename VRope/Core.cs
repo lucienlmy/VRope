@@ -42,6 +42,7 @@ namespace VRope
         public static float BalloonUpForceIncrement;
         public static float MaxBalloonHookAltitude;
         public const float ForceScaleFactor = 1.3f;
+        public const float TransportVehicleDownForce = 42.0f;
 
         //public static int MAX_CHAIN_SEGMENTS;
         //public static bool SHOW_CHAIN_JOINT_PROP = true;
@@ -55,7 +56,7 @@ namespace VRope
         public const int MAX_HOOKED_PEDS = 300;
         public const int MAX_SELECTED_HOOKS = 30;
         public const int INIT_HOOK_LIST_CAPACITY = 100;
-        public const int PED_RAGDOLL_DURATION = 5000; // WARNING: Values above 9000 are very likely to crash the game (GTAV v1.0.2545).
+        public const int PED_RAGDOLL_DURATION = 7000; // WARNING: Values above 9000 are very likely to crash the game (GTAV v1.0.2545).
         public const char SEPARATOR_CHAR = '+';
 
         public const float MIN_MIN_ROPE_LENGTH = 0.5f;
@@ -110,7 +111,7 @@ namespace VRope
         public static bool BalloonHookMode = false;
         public static int CurrentTransportHookFilterIndex = 0;
         public static int CurrentTransportHookModeIndex = 1;
-        public static int TransportEntitiesRadius = 32;
+        public static int TransportEntitiesRadius = 35;
 
         public static bool TestAction1 = false;
 
