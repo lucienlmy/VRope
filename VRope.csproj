@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <PropertyGroup>
+    <AssemblyName>VRope</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWindowsForms>True</UseWindowsForms>
+    <TargetFramework>net48</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>11.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Compile Remove="VRope2\**" />
+    <Compile Remove="VRope\Properties\**" />
+    <Compile Remove="新建文件夹\**" />
+    <EmbeddedResource Remove="VRope2\**" />
+    <EmbeddedResource Remove="VRope\Properties\**" />
+    <EmbeddedResource Remove="新建文件夹\**" />
+    <None Remove="VRope2\**" />
+    <None Remove="VRope\Properties\**" />
+    <None Remove="新建文件夹\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="ScriptHookVDotNet2">
+      <HintPath>..\..\1 脚本编写支持文件\ScriptHookVDotNet2.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.XInput">
+      <HintPath>..\..\Games\1Game File\GTAV Mod Manager\Mod managerV\Mod scripts\S 绳索VRope v1.0.13 alpha\SharpDX.XInput.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core" />
+  </ItemGroup>
+</Project>
